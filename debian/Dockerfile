@@ -26,7 +26,7 @@ ENV KEEPALIVE=1 \
 
 ARG GID=1000 \
     UID=1000  \
-    USER=postgresql \
+    USER=postgres \
     WORKDIR=/var/lib/postgresql
 
 # Create a user with UID and GID

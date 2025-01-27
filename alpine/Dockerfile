@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.vendor="Snowdream Tech" \
     org.opencontainers.image.version="3.21.0" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
-    
+
 # Switch to the user
 USER root
 
@@ -24,9 +24,19 @@ ENV KEEPALIVE=1 \
     # which are port numbers less than 1024. 
     CAP_NET_BIND_SERVICE=0 
 
+ENV POSTGRES_VERSION=15.10-r0 \
+    POSTGRES_PORT=5432 \
+    POSTGRES_MAX_CONNECTIONS=100 \
+    POSTGRES_ROOT_PASSWORD="" \
+    POSTGRES_USER='' \
+    POSTGRES_PASSWORD='' \
+    POSTGRES_DB='' \
+    POSTGRES_HOST_AUTH_METHOD='scram-sha-256'  \
+    POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
+
 ARG GID=1000 \
     UID=1000  \
-    USER=postgresql \
+    USER=postgres \
     WORKDIR=/var/lib/postgresql
 
 # Create a user with UID and GID
@@ -42,8 +52,18 @@ RUN if [ "${USER}" != "root" ] && [ "${CAP_NET_BIND_SERVICE}" -eq 1 ]; then \
     # setcap 'cap_net_bind_service=+ep' `which nginx`; \
     fi
 
-RUN apk add --no-cache \
-    vim
+RUN apk add --no-cache postgresql15=${POSTGRES_VERSION}  \
+    postgresql15-client=${POSTGRES_VERSION} \
+    postgresql15-contrib=${POSTGRES_VERSION} \
+    # Chown the files to USER
+    && find /etc  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /usr/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /usr/share  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /usr/libexec  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /var/log  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /var/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && ls -l /usr/libexec/postgresql/ | awk '{print $9}'| xargs -I {} chown -Rfv ${USER}:${USER} /usr/bin/{}
+
 
 # Switch to the user
 USER ${USER}
@@ -51,6 +71,6 @@ USER ${USER}
 # Set the workdir
 WORKDIR ${WORKDIR}
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
