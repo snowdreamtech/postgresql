@@ -24,6 +24,16 @@ ENV KEEPALIVE=1 \
     # which are port numbers less than 1024. 
     CAP_NET_BIND_SERVICE=0
 
+ENV POSTGRES_VERSION=15.10-0+deb12u1 \
+    POSTGRES_PORT=5432 \
+    POSTGRES_MAX_CONNECTIONS=100 \
+    POSTGRES_ROOT_PASSWORD="" \
+    POSTGRES_USER='' \
+    POSTGRES_PASSWORD='' \
+    POSTGRES_DB='' \
+    POSTGRES_HOST_AUTH_METHOD='scram-sha-256'  \
+    POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
+
 ARG GID=1000 \
     UID=1000  \
     USER=postgres \
@@ -58,7 +68,17 @@ RUN set -eux \
 RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy update  \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \ 
-    vim \
+    postgresql-15=${POSTGRES_VERSION}  \
+    postgresql-client-15=${POSTGRES_VERSION} \
+    postgresql-contrib \
+    # Chown the files to USER
+    && find /etc  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /usr/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /usr/share  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /usr/libexec  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /var/log  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /var/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && ls -l /usr/libexec/postgresql/ | awk '{print $9}'| xargs -I {} chown -Rfv ${USER}:${USER} /usr/bin/{} \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy --purge autoremove \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -71,6 +91,6 @@ USER ${USER}
 # Set the workdir
 WORKDIR ${WORKDIR}
 
-COPY docker-entrypoint.sh /usr/local/bin/
+COPY --chown=${USER}:${USER} docker-entrypoint.sh /usr/local/bin/
 
 ENTRYPOINT ["docker-entrypoint.sh"]
