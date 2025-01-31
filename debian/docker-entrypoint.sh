@@ -2,337 +2,125 @@
 
 set -e
 
-# Modify from https://gitlab.alpinelinux.org/alpine/aports/-/blob/master/main/postgresql-common/postgresql.initd
-pg_version=$(pg_versions get-default)
-
-name="PostgreSQL $pg_version"
-description="PostgreSQL server"
-
-extra_started_commands="stop_fast stop_force stop_smart reload reload_force promote"
-description_stop_fast="Stop using Fast Shutdown mode (SIGINT)"
-description_stop_force="Stop using Immediate Shutdown mode (SIGQUIT)"
-description_stop_smart="Stop using Smart Shutdown mode (SIGTERM)"
-description_reload="Reload configuration"
-description_reload_force="Reload configuration and restart if needed"
-description_promote="Promote standby server to master - exit recovery and begin read-write operations"
-
-extra_stopped_commands="setup"
-description_setup="Initialize a new $name cluster"
+# Modify from https://salsa.debian.org/postgresql/postgresql-common/-/blob/master/debian/init.d-functions
+#
+#
+#
+# This file contains common functionality for all postgresql server
+# package init.d scripts. It is usually included by
+# /etc/init.d/postgresql
 
 user="postgres"
 group="postgres"
 
-auto_setup="yes"
-start_timeout=10
-# nice_timeout, rude_timeout and force_timeout are for backward compatibility.
-stop_smart_timeout=${nice_timeout:-5}
-stop_fast_timeout=${rude_timeout:-10}
-stop_force_timeout=${force_timeout:-0}
+init_functions=/lib/lsb/init-functions
+#redhat# init_functions=/usr/share/postgresql-common/init-functions-compat
+. $init_functions
 
-data_dir="/var/lib/postgresql/$pg_version/data"
-conf_dir="/etc/postgresql"
-logfile="/var/log/postgresql/postmaster.log"
-env_vars=
-pg_opts=
-port=5432
+PGBINROOT="/usr/lib/postgresql/"
+#redhat# PGBINROOT="/usr/pgsql-"
+pg_version=$(ls $PGBINROOT 2>/dev/null)
 
-command="/usr/libexec/postgresql$pg_version/postgres"
+# do pg_ctlcluster action $1 to all clusters of version $2 with command
+# description $3; output according to Debian Policy for init scripts
+do_ctl_all() {
+    [ "$1" ] || { echo "Error: invalid command '$1'" >&2; exit 1; }
+    [ "$2" ] || { echo "Error: invalid version '$2'" >&2; exit 1; }
+    [ -d "/etc/postgresql/$2" ] || return 0
+    [ "$(ls /etc/postgresql/$2)" ] || return 0
+    [ -x "$PGBINROOT$2/bin/postgres" ] || return 0
 
-conffile="$conf_dir/postgresql.conf"
-pidfile="$data_dir/postmaster.pid"
-start_stop_daemon_args="
-	--user $user
-	--group $group
-	--pidfile $pidfile
-	--wait 100"
+    status=0
+    log_daemon_msg "$3"
+    for c in /etc/postgresql/"$2"/*; do
+	[ -e "$c/postgresql.conf" ] || continue
+	name=$(basename "$c")
 
-depend() {
-	use net
-	after firewall
-
-	if [ "$(get_config log_destination)" = "syslog" ]; then
-		use logger
+	# evaluate start.conf
+	if [ -e "$c/start.conf" ]; then
+	    start=$(sed 's/#.*$//; /^[[:space:]]*$/d; s/^\s*//; s/\s*$//' "$c/start.conf")
+	else
+	    start=auto
 	fi
+	[ "$start" = "auto" ] || continue
+
+        log_progress_msg "$name"
+	set +e
+	if [ "$1" = "stop" ] || [ "$1" = "restart" ]; then
+	    ERRMSG=$(pg_ctlcluster --force "$2" "$name" $1 2>&1)
+	else
+	    ERRMSG=$(pg_ctlcluster "$2" "$name" $1 2>&1)
+	fi
+	res=$?
+	set -e
+	# Do not fail on success or if cluster is already/not running
+	[ $res -eq 0 ] || [ $res -eq 2 ] || status=$(($status || $res))
+    done
+    if [ $status -ne 0 -a -n "$ERRMSG" ]; then
+	log_failure_msg "$ERRMSG"
+    fi
+    log_end_msg $status
+    return $status
 }
 
-start_pre() {
-	check_deprecated_var nice_timeout stop_smart_timeout
-	check_deprecated_var rude_timeout stop_fast_timeout
-	check_deprecated_var rude_quit stop_fast_timeout
-	check_deprecated_var force_timeout stop_force_timeout
-	check_deprecated_var force_quit stop_force_timeout
-	check_deprecated_var env_vars 'export NAME=VALUE'
-
-	# For backward compatibility only.
-	[ "$rude_quit" = no ] && [ "stop_fast_timeout" -eq 10 ] && stop_fast_timeout=0
-	[ "$force_quit" = yes ] && [ "$stop_force_timeout" -eq 0 ] && stop_force_timeout=2
-
-	if [ ! -d "$data_dir/base" ]; then
-		if [ "$auto_setup" = "yes" ]; then
-			setup || return 1
-		else
-			eerror "Database not found at: $data_dir"
-			eerror "Please make sure that 'data_dir' points to the right path."
-			eerror "You can run '/etc/init.d/postgresql setup' to setup a new database cluster."
-			return 1
-		fi
-	fi
-
-	# This is mainly for backward compatibility with the former $conf_dir default value.
-	if [ "$conf_dir" = /etc/postgresql ] && ! [ -f "$conf_dir/postgresql.conf" ]; then
-		conf_dir=$data_dir
-	fi
-
-	local socket_dirs=$(get_config "unix_socket_directories" "/run/postgresql")
-	local port=$(get_config "port" "$port")
-
-	start_stop_daemon_args="$start_stop_daemon_args --env PGPORT=$port"
-
-	local var; for var in $env_vars; do
-		start_stop_daemon_args="$start_stop_daemon_args --env $var"
-	done
-
-	(
-		# Set the proper permission for the socket paths and create them if
-		# they don't exist.
-		set -f; IFS=","
-		for dir in $socket_dirs; do
-			if [ -e "${dir%/}/.s.PGSQL.$port" ]; then
-				eerror "Socket conflict. A server is already listening on:"
-				eerror "    ${dir%/}/.s.PGSQL.$port"
-				eerror "Hint: Change 'port' to listen on a different socket."
-				return 1
-			elif [ "${dir%/}" != "/tmp" ]; then
-				checkpath -d -m 1775 -o $user:$group "$dir"
-			fi
-		done
-	)
+# create /var/run/postgresql
+create_socket_directory() {
+    if [ -d /var/run/postgresql ]; then
+	chmod 2775 /var/run/postgresql
+    else
+	install -d -m 2775 -o postgres -g postgres /var/run/postgresql
+	[ -x /sbin/restorecon ] && restorecon -R /var/run/postgresql || true
+    fi
 }
 
+# start all clusters of version $1
+# output according to Debian Policy for init scripts
 start() {
-	ebegin "Starting $name"
-
-	rm -f "$pidfile"
-	start-stop-daemon --start \
-		$start_stop_daemon_args \
-		--exec /usr/bin/pg_ctl \
-		-- start \
-			--silent \
-			-w --timeout="$start_timeout" \
-			--log="$logfile" \
-			--pgdata="$conf_dir" \
-			-o "--data-directory=$data_dir $pg_opts"
-
-	if eend $? "Failed to start $name"; then
-		service_set_value "command" "$command"
-		service_set_value "pidfile" "$pidfile"
-	else
-		eerror "Check the log for a possible explanation of the above error:"
-		eerror "    $logfile"
-		return 1
-	fi
+    do_ctl_all start "$1" "Starting PostgreSQL $1 database server"
 }
 
+# stop all clusters of version $1
+# output according to Debian Policy for init scripts
 stop() {
-	local command=$(service_get_value "command" || echo "$command")
-	local pidfile=$(service_get_value "pidfile" || echo "$pidfile")
-	local retry=''
-
-	[ "$stop_smart_timeout" -eq 0 ] \
-		|| retry="SIGTERM/$stop_smart_timeout"
-	[ "$stop_fast_timeout" -eq 0 ] \
-		|| retry="${retry:+$retry/}SIGINT/$stop_fast_timeout"
-	[ "$stop_force_timeout" -eq 0 ] \
-		|| retry="${retry:+$retry/}SIGQUIT/$stop_force_timeout"
-	[ "$retry" ] \
-		|| retry='SIGINT/5'
-
-	local seconds=$(( $stop_smart_timeout + $stop_fast_timeout + $stop_force_timeout ))
-
-	ebegin "Stopping $name (this can take up to $seconds seconds)"
-
-	start-stop-daemon --stop \
-		--exec "$command" \
-		--retry "$retry" \
-		--progress \
-		--pidfile "$pidfile"
-	eend $? "Failed to stop $name"
+    do_ctl_all stop "$1" "Stopping PostgreSQL $1 database server"
 }
 
-stop_smart() {
-	_stop SIGTERM "smart shutdown"
+# restart all clusters of version $1
+# output according to Debian Policy for init scripts
+restart() {
+    do_ctl_all restart "$1" "Restarting PostgreSQL $1 database server"
 }
 
-stop_fast() {
-	_stop SIGINT "fast shutdown"
-}
-
-stop_force() {
-	_stop SIGQUIT "immediate shutdown"
-}
-
-_stop() {
-	local command=$(service_get_value "command" || echo "$command")
-	local pidfile=$(service_get_value "pidfile" || echo "$pidfile")
-
-	ebegin "Stopping $name ($2)"
-
-	start-stop-daemon --stop \
-		--exec "$command" \
-		--signal "$1" \
-		--pidfile "$pidfile" \
-		&& mark_service_stopped "$RC_SVCNAME"
-	eend $? "Failed to stop $name"
-}
-
+# reload all clusters of version $1
+# output according to Debian Policy for init scripts
 reload() {
-	ebegin "Reloading $name configuration"
-
-	start-stop-daemon --signal HUP --pidfile "$pidfile" && check_config_errors
-	local retval=$?
-
-	is_pending_restart || true
-
-	eend $retval
+    do_ctl_all reload "$1" "Reloading PostgreSQL $1 database server"
 }
 
-reload_force() {
-	ebegin "Reloading $name configuration"
-
-	start-stop-daemon --signal HUP --pidfile "$pidfile" && check_config_errors
-	local retval=$?
-
-	if [ $retval -eq 0 ] && is_pending_restart; then
-		rc-service --nodeps "$RC_SVCNAME" restart
-		retval=$?
-	fi
-	eend $retval
+status() {
+    CLUSTERS=`pg_lsclusters -h | grep "^$1[[:space:]]"`
+    # no clusters -> unknown status
+    [ -n "$CLUSTERS" ] || exit 4
+    echo "$CLUSTERS" | awk 'BEGIN {rc=0; printf("Running clusters: ")} {if (match($4, "online")) printf ("%s/%s ", $1, $2); else rc=3} END { printf("\n"); exit rc }'
 }
 
-promote() {
-	ebegin "Promoting $name to master"
+# return all installed versions which do not have their own init script
+get_versions() {
+    versions=''
+    local v dir skipinit
 
-	cd "$data_dir"  # to avoid the: could not change directory to "/root"
-	su $user -c "pg_ctl promote --wait --log=$logfile --pgdata=$conf_dir -o '--data-directory=$data_dir'"
-	eend $?
-}
+    skipinit=continue
+    #redhat# skipinit=true # RedHat systems will have /etc/init.d/postgresql-* provided by the yum.pg.o package
+    dir=$PGBINROOT
+    #redhat# dir="-d /usr/pgsql-*"
 
-setup() {
-	local bkpdir
-
-	ebegin "Creating a new $name database cluster"
-
-	if [ -d "$data_dir/base" ]; then
-		eend 1 "$data_dir/base already exists!"; return 1
+    for v in `ls $dir 2>/dev/null`; do
+        #redhat# v=${v#*-}
+        [ -x /etc/init.d/postgresql-$v ] && $skipinit
+        if [ -x $PGBINROOT$v/bin/pg_ctl ]; then
+	    versions="$versions $v"
 	fi
-
-	if [ "$pg_version" -ge 15 ]; then
-		: ${initdb_opts:="-E UTF-8 --locale-provider=icu --icu-locale=en-001-x-icu --data-checksums"}
-	else
-		: ${initdb_opts:="-E UTF-8 --locale=C --data-checksums"}
-	fi
-
-	# If data_dir exists, backup configs.
-	if [ -d "$data_dir" ]; then
-		bkpdir="$(mktemp -d)"
-		find "$data_dir" -type f -name "*.conf" -maxdepth 1 \
-			-exec mv -v {} "$bkpdir"/ \;
-		rm -rf "$data_dir"/*
-	fi
-
-	install -d -m 0700 -o $user -g $group "$data_dir"
-	install -d -m 0750 -o $user -g $group "$conf_dir"
-
-	cd "$data_dir"  # to avoid the: could not change directory to "/root"
-	su $user -c "/usr/bin/initdb $initdb_opts --pgdata $data_dir"
-	local retval=$?
-
-	if [ -d "$bkpdir" ]; then
-		# Move backuped configs back.
-		mv -v "$bkpdir"/* "$data_dir"/
-		rm -rf "$bkpdir"
-	fi
-
-	local conf_dir=$(readlink -f "$conf_dir")
-
-	if [ "${data_dir%/}" != "${conf_dir%/}" ]; then
-		# Move configs from data_dir to conf_dir and symlink them to data_dir.
-		local name newname
-		for name in postgresql.conf pg_hba.conf pg_ident.conf; do
-			newname="$name"
-			[ ! -e "$conf_dir"/$name ] || newname="$name.new"
-
-			mv "$data_dir"/$name "$conf_dir"/$newname
-			ln -s "$conf_dir"/$name "$data_dir"/$name
-		done
-	fi
-
-	eend $retval
-} 
-
-
-get_config() {
-	local name="$1"
-	local default="${2:-}"
-
-	if [ ! -f "$conffile" ]; then
-		printf '%s\n' "$default"
-		return 1
-	fi
-	sed -En "/^\s*${name}\b/{                      # find line starting with the name
-		  s/^\s*${name}\s*=?\s*([^#]+).*/\1/;  # capture the value
-		  s/\s*$//;                            # trim trailing whitespaces
-		  s/^['\"](.*)['\"]$/\1/;              # remove delimiting quotes
-		  p
-		}" "$conffile" \
-		| grep . || printf '%s\n' "$default"
-}
-
-check_config_errors() {
-	local out; out=$(psql_command "
-		select
-		  sourcefile || ': line ' || sourceline || ': ' || error ||
-		    case when name is not null
-		    then ': ' || name || ' = ''' || setting || ''''
-		    else ''
-		    end
-		from pg_file_settings
-		where error is not null
-		  and name not in (select name from pg_settings where pending_restart = true);
-		")
-	if [ $? -eq 0 ] && [ "$out" ]; then
-		eerror 'Configuration file contains errors:'
-		printf '%s\n' "$out" | while read line; do
-			eerror "  $line"
-		done
-		return 1
-	fi
-}
-
-is_pending_restart() {
-	local out; out=$(psql_command "select name from pg_settings where pending_restart = true;")
-
-	if [ $? -eq 0 ] && [ "$out" ]; then
-		ewarn 'PostgreSQL must be restarted to apply changes in the following parameters:'
-		local line; for line in $out; do
-			ewarn "  $line"
-		done
-		return 0
-	fi
-	return 1
-}
-
-check_deprecated_var() {
-	local old_name="$1"
-	local new_name="$2"
-
-	if [ -n "$(getval "$old_name")" ]; then
-		ewarn "Variable '$old_name' is deprecated, please use '$new_name' instead."
-	fi
-}
-
-getval() {
-	eval "printf '%s\n' \"\$$1\""
+    done
 }
 
 psql_command() {
@@ -422,9 +210,9 @@ create_user_and_database_if_not_exist() {
 }
 
 # postgres
-start_pre
+create_socket_directory
 
-POSTGRES_CONFIG_PATH="/etc/postgresql$pg_version"
+POSTGRES_CONFIG_PATH="/etc/postgresql/$pg_version/main"
 POSTGRES_DATABASE_CONFIG_PATH="${POSTGRES_CONFIG_PATH}/postgresql.conf"
 POSTGRES_HBA_CONFIG_PATH="${POSTGRES_CONFIG_PATH}/pg_hba.conf"
 
@@ -473,7 +261,7 @@ if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
 fi
 
 # postgres
-start
+start "$pg_version"
 modify_root_password
 create_user_and_database_if_not_exist
 
@@ -485,7 +273,7 @@ fi
 # keep the docker container running
 # https://github.com/docker/compose/issues/1926#issuecomment-422351028
 if [ "${KEEPALIVE}" -eq 1 ]; then
-	trap stop_smart TERM INT
+	trap "stop $pg_version" TERM INT
 	tail -f /dev/null &
 	wait
 	# sleep infinity & wait

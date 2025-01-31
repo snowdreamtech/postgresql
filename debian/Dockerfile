@@ -11,7 +11,7 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.vendor="Snowdream Tech" \
     org.opencontainers.image.version="12.8" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
-    
+
 # Switch to the user
 USER root
 
@@ -70,18 +70,21 @@ RUN set -eux \
 RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy update  \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \ 
-    openrc \
     postgresql-15=${POSTGRES_VERSION}  \
     postgresql-client-15=${POSTGRES_VERSION} \
     postgresql-contrib \
     # Chown the files to USER
     && find /etc  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    # && chown -Rv ${USER}:${USER} clusterdb createdb createlang createuser dropdb dropuser droplang pgbench psql reindexdb vacuumdb vacuumlo \
+    && find /usr/bin  -name "pg_*" -exec chown -Rv ${USER}:${USER} {} \; \
     && find /usr/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
     && find /usr/share  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
-    && find /usr/libexec  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
     && find /var/log  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
     && find /var/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
-    && ls -l /usr/libexec/postgresql/ | awk '{print $9}'| xargs -I {} chown -Rfv ${USER}:${USER} /usr/bin/{} \
+    && find /var/cache  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /var/run  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    && find /run  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
+    # && ls -l /usr/share/postgresql-common | awk '{print $9}'| xargs -I {} chown -Rfv ${USER}:${USER} /usr/bin/{} \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy --purge autoremove \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -89,7 +92,8 @@ RUN set -eux \
     && rm -rf /var/tmp/*
 
 # Switch to the user
-USER ${USER}
+USER root
+# USER ${USER}
 
 # Set the workdir
 WORKDIR ${WORKDIR}
