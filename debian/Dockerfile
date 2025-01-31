@@ -34,6 +34,8 @@ ENV POSTGRES_VERSION=15.10-0+deb12u1 \
     POSTGRES_HOST_AUTH_METHOD='scram-sha-256'  \
     POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
 
+ENV PATH=${PATH}:/lib/rc/bin:/lib/rc/sbin
+
 ARG GID=1000 \
     UID=1000  \
     USER=postgres \
@@ -68,6 +70,7 @@ RUN set -eux \
 RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy update  \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \ 
+    openrc \
     postgresql-15=${POSTGRES_VERSION}  \
     postgresql-client-15=${POSTGRES_VERSION} \
     postgresql-contrib \

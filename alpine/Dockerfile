@@ -34,6 +34,8 @@ ENV POSTGRES_VERSION=15.10-r0 \
     POSTGRES_HOST_AUTH_METHOD='scram-sha-256'  \
     POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
 
+ENV PATH=${PATH}:/usr/libexec/rc/bin:/usr/libexec/rc/sbin
+
 ARG GID=1000 \
     UID=1000  \
     USER=postgres \
@@ -52,7 +54,9 @@ RUN if [ "${USER}" != "root" ] && [ "${CAP_NET_BIND_SERVICE}" -eq 1 ]; then \
     # setcap 'cap_net_bind_service=+ep' `which nginx`; \
     fi
 
-RUN apk add --no-cache postgresql15=${POSTGRES_VERSION}  \
+RUN apk add --no-cache \
+    openrc \
+    postgresql15=${POSTGRES_VERSION}  \
     postgresql15-client=${POSTGRES_VERSION} \
     postgresql15-contrib=${POSTGRES_VERSION} \
     # Chown the files to USER
