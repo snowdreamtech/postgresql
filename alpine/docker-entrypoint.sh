@@ -46,6 +46,17 @@ start_stop_daemon_args="
 	--pidfile $pidfile
 	--wait 100"
 
+service_set_value() {
+    local service_name=$1
+    local value=$2
+    echo "$service_name=$value" >> /tmp/service_values
+}
+
+service_get_value() {
+    local service_name=$1
+    grep "^$service_name=" /tmp/service_values | cut -d'=' -f2
+}
+
 depend() {
 	use net
 	after firewall

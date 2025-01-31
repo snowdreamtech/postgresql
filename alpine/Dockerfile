@@ -59,6 +59,8 @@ RUN apk add --no-cache \
     postgresql15=${POSTGRES_VERSION}  \
     postgresql15-client=${POSTGRES_VERSION} \
     postgresql15-contrib=${POSTGRES_VERSION} \
+    # touch /tmp/service_values 
+    && touch /tmp/service_values \
     # Chown the files to USER
     && find /etc  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
     && find /usr/lib  -name "*postgresql*" -exec chown -Rv ${USER}:${USER} {} \; \
@@ -70,7 +72,8 @@ RUN apk add --no-cache \
 
 
 # Switch to the user
-USER ${USER}
+USER root
+# USER ${USER}
 
 # Set the workdir
 WORKDIR ${WORKDIR}
