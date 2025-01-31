@@ -68,7 +68,7 @@ start_pre() {
 	[ "$force_quit" = yes ] && [ "$stop_force_timeout" -eq 0 ] && stop_force_timeout=2
 
 	if [ ! -d "$data_dir/base" ]; then
-		if yesno "$auto_setup"; then
+		if [ "$auto_setup" = "yes" ]; then
 			setup || return 1
 		else
 			eerror "Database not found at: $data_dir"
