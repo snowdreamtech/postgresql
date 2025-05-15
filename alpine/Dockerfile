@@ -9,7 +9,7 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.source="https://github.com/snowdreamtech/postgresql" \
     org.opencontainers.image.vendor="Snowdream Tech" \
-    org.opencontainers.image.version="15.12.0" \
+    org.opencontainers.image.version="15.13.0" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
 
 # Switch to the user
@@ -24,7 +24,7 @@ ENV KEEPALIVE=1 \
     # which are port numbers less than 1024. 
     CAP_NET_BIND_SERVICE=0 
 
-ENV POSTGRES_VERSION=15.12-r0 \
+ENV POSTGRES_VERSION=15.13-r0 \
     POSTGRES_PORT=5432 \
     POSTGRES_MAX_CONNECTIONS=100 \
     POSTGRES_ROOT_PASSWORD="" \
