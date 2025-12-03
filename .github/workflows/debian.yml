@@ -111,9 +111,12 @@ jobs:
         uses: docker/metadata-action@v5.10.0
         with:
           images: |
-            name=snowdreamtech/base,enable=true
-            name=ghcr.io/snowdreamtech/base,enable=true
-            name=quay.io/snowdreamtech/base,enable=true
+            name=snowdreamtech/postgresql,enable=true
+            name=ghcr.io/snowdreamtech/postgresql,enable=true
+            name=quay.io/snowdreamtech/postgresql,enable=true
+            name=snowdreamtech/postgres,enable=true
+            name=ghcr.io/snowdreamtech/postgres,enable=true
+            name=quay.io/snowdreamtech/postgres,enable=true
           flavor: |
             latest=false  
             prefix=
