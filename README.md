@@ -1,11 +1,11 @@
-# Base
+# PostgreSQL
 
-![Docker Image Version](https://img.shields.io/docker/v/snowdreamtech/base)
-![Docker Image Size](https://img.shields.io/docker/image-size/snowdreamtech/base/latest)
-![Docker Pulls](https://img.shields.io/docker/pulls/snowdreamtech/base)
-![Docker Stars](https://img.shields.io/docker/stars/snowdreamtech/base)
+![Docker Image Version](https://img.shields.io/docker/v/snowdreamtech/postgresql)
+![Docker Image Size](https://img.shields.io/docker/image-size/snowdreamtech/postgresql/latest)
+![Docker Pulls](https://img.shields.io/docker/pulls/snowdreamtech/postgresql)
+![Docker Stars](https://img.shields.io/docker/stars/snowdreamtech/postgresql)
 
-Docker Image packaging for Base. (amd64, arm32v5,  arm32v6, arm32v7, arm64v8, i386, mips64le, ppc64le,riscv64, s390x)
+Docker Image packaging for PostgreSQL. (amd64, arm32v5,  arm32v6, arm32v7, arm64v8, i386, mips64le, ppc64le,riscv64, s390x)
 
 # Usage
 
@@ -17,21 +17,31 @@ To help you get started creating a container from this image you can either use 
 
 ```bash
 docker run -d \
-  --name=base \
+  --name=postgresql \
   -e TZ=Asia/Shanghai \
+  -e POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=0 \
+  -p 5432:5432 \
   --restart unless-stopped \
-  snowdreamtech/base:latest
+  snowdreamtech/postgresql:latest
 ```
 
 ### Advance
 
 ```bash
 docker run -d \
-  --name=base \
+  --name=postgresql \
   -e TZ=Asia/Shanghai \
-  -v /path/to/data:/path/to/data \
+  -e POSTGRES_ROOT_PASSWORD='root password' \
+  -e POSTGRES_PORT=5432 \
+  -e POSTGRES_USER='user name' \
+  -e POSTGRES_PASSWORD='user password' \
+  -e POSTGRES_DB='db name' \
+  -e POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=0 \
+  -e POSTGRES_MAX_CONNECTIONS=500 \
+  -p 5432:5432 \
+  -v /path/to/data:/var/lib/postgresql/14(pg-version)/data \
   --restart unless-stopped \
-  snowdreamtech/base:latest
+  snowdreamtech/postgresql:latest
 ```
 
 ## Docker Compose
@@ -39,26 +49,42 @@ docker run -d \
 ### Simple
 
 ```bash
+version: "3"
+
 services:
-  base:
-    image: snowdreamtech/base:latest
-    container_name: base
+  postgresql:
+    image: snowdreamtech/postgresql:latest
+    container_name: postgresql
     environment:
       - TZ=Asia/Shanghai
+      - POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=0
+    ports:
+      - 5432:5432  
     restart: unless-stopped
 ```
 
 ### Advance
 
 ```bash
+version: "3"
+
 services:
-  base:
-    image: snowdreamtech/base:latest
-    container_name: base
+  postgresql:
+    image: snowdreamtech/postgresql:latest
+    container_name: postgresql
     environment:
       - TZ=Asia/Shanghai
+      - POSTGRES_ROOT_PASSWORD='root password'
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER='user name'
+      - POSTGRES_PASSWORD='user password'
+      - POSTGRES_DB='db name'
+      - POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=0
+      - POSTGRES_MAX_CONNECTIONS=500
     volumes:
-      - /path/to/data:/path/to/data
+      - /path/to/data:/var/lib/postgresql/14(pg-version)/data
+    ports:
+      - 5432:5432   
     restart: unless-stopped
 ```
 
@@ -66,7 +92,7 @@ services:
 
 ```bash
 docker buildx create --use --name build --node build --driver-opt network=host
-docker buildx build -t snowdreamtech/base --platform=linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x . --push
+docker buildx build -t snowdreamtech/postgresql --platform=linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x . --push
 ```
 
 ## Reference
@@ -78,7 +104,7 @@ docker buildx build -t snowdreamtech/base --platform=linux/386,linux/amd64,linux
 1. [Faster Multi-Platform Builds: Dockerfile Cross-Compilation Guide](https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/)
 1. [docker/buildx](https://github.com/docker/buildx)
 
-## Contact (备注：base)
+## Contact (备注：postgresql)
 
 * Email: sn0wdr1am@qq.com
 * QQ: 3217680847
