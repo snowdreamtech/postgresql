@@ -31,10 +31,10 @@ docker run -d \
 docker run -d \
   --name=postgresql \
   -e TZ=Asia/Shanghai \
-  -e POSTGRES_ROOT_PASSWORD='root password' \
+  -e POSTGRES_ROOT_PWD='root password' \
   -e POSTGRES_PORT=5432 \
   -e POSTGRES_USER='user name' \
-  -e POSTGRES_PASSWORD='user password' \
+  -e POSTGRES_PWD='user password' \
   -e POSTGRES_DB='db name' \
   -e POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=0 \
   -e POSTGRES_MAX_CONNECTIONS=500 \
@@ -74,10 +74,10 @@ services:
     container_name: postgresql
     environment:
       - TZ=Asia/Shanghai
-      - POSTGRES_ROOT_PASSWORD='root password'
+      - POSTGRES_ROOT_PWD='root password'
       - POSTGRES_PORT=5432
       - POSTGRES_USER='user name'
-      - POSTGRES_PASSWORD='user password'
+      - POSTGRES_PWD='user password'
       - POSTGRES_DB='db name'
       - POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=0
       - POSTGRES_MAX_CONNECTIONS=500

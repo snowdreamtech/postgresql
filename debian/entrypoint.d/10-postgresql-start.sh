@@ -131,9 +131,9 @@ psql_command() {
 
 # Custom scripts
 modify_root_password() {
-	if [ -n "${POSTGRES_ROOT_PASSWORD}" ]; then
+	if [ -n "${POSTGRES_ROOT_PWD}" ]; then
 		{
-			out=$(psql_command "ALTER USER postgres WITH PASSWORD '${POSTGRES_ROOT_PASSWORD}';")
+			out=$(psql_command "ALTER USER postgres WITH PASSWORD '${POSTGRES_ROOT_PWD}';")
 
 			if [ "$out" ]; then
 				for line in $out; do
@@ -157,12 +157,12 @@ create_user_if_not_exist() {
 		if [ "${userAlreadyExists}" ] && [ "${userAlreadyExists}" -eq 1 ]; then
 			echo "user ${POSTGRES_USER} has already exists."
 		else
-			if [ -z "${POSTGRES_PASSWORD}" ]; then
-				POSTGRES_PASSWORD=$(openssl rand -base64 33)
-				echo "generate random password for user ${POSTGRES_USER} : ${POSTGRES_PASSWORD}"
+			if [ -z "${POSTGRES_PWD}" ]; then
+				POSTGRES_PWD=$(openssl rand -base64 33)
+				echo "generate random password for user ${POSTGRES_USER} : ${POSTGRES_PWD}"
 			fi
 
-			userCreatedResult=$(psql_command "CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';")
+			userCreatedResult=$(psql_command "CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PWD}';")
 
 			if [ -z "${userCreatedResult}" ]; then
 				echo "user ${POSTGRES_USER} has been created with your password."
@@ -219,10 +219,10 @@ POSTGRES_DATABASE_CONFIG_PATH="${POSTGRES_CONFIG_PATH}/postgresql.conf"
 POSTGRES_HBA_CONFIG_PATH="${POSTGRES_CONFIG_PATH}/pg_hba.conf"
 
 # openssl rand -base64 33
-if [ -z "${POSTGRES_ROOT_PASSWORD}" ]; then
+if [ -z "${POSTGRES_ROOT_PWD}" ]; then
 	{
-		POSTGRES_ROOT_PASSWORD=$(openssl rand -base64 33)
-		echo "generate random password for user postgres : ${POSTGRES_ROOT_PASSWORD}"
+		POSTGRES_ROOT_PWD=$(openssl rand -base64 33)
+		echo "generate random password for user postgres : ${POSTGRES_ROOT_PWD}"
 	}
 fi
 
