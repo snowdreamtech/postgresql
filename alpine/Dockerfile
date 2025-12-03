@@ -48,7 +48,7 @@ ENV KEEPALIVE=${KEEPALIVE} \
     USER=${USER} \
     WORKDIR=${WORKDIR} 
 
-ENV POSTGRES_VERSION=16.11-r0 \
+ENV POSTGRES_VERSION=17.7-r0 \
     POSTGRES_PORT=5432 \
     POSTGRES_MAX_CONNECTIONS=100 \
     POSTGRES_ROOT_PWD="" \
@@ -70,9 +70,9 @@ RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 
 RUN apk update \
     && apk add --no-cache \
     openrc \
-    postgresql16=${POSTGRES_VERSION}  \
-    postgresql16-client=${POSTGRES_VERSION} \
-    postgresql16-contrib=${POSTGRES_VERSION} 
+    postgresql17=${POSTGRES_VERSION}  \
+    postgresql17-client=${POSTGRES_VERSION} \
+    postgresql17-contrib=${POSTGRES_VERSION} 
 
 # Enable CAP_NET_BIND_SERVICE
 # RUN if [ "${USER}" != "root" ] && [ "${CAP_NET_BIND_SERVICE}" -eq 1 ]; then \
