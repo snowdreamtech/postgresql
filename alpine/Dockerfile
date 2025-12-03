@@ -57,6 +57,8 @@ ENV POSTGRES_VERSION=15.15-r0 \
     POSTGRES_DB='' \
     POSTGRES_HOST_AUTHMETHOD='scram-sha-256'  \
     POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
+    
+ENV PATH=${PATH}:/usr/libexec/rc/bin:/usr/libexec/rc/sbin
 
 # Create a user with PUID and PGID
 RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 ] && [ "${PGID}" -ne 0 ]; then \
@@ -67,6 +69,7 @@ RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 
 
 RUN apk update \
     && apk add --no-cache \
+    openrc \
     postgresql15=${POSTGRES_VERSION}  \
     postgresql15-client=${POSTGRES_VERSION} \
     postgresql15-contrib=${POSTGRES_VERSION} 
