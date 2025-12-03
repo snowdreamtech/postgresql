@@ -2,15 +2,15 @@ FROM snowdreamtech/alpine:3.22.2
 
 # OCI annotations to image
 LABEL org.opencontainers.image.authors="Snowdream Tech" \
-    org.opencontainers.image.title="Base Image Based On Alpine" \
-    org.opencontainers.image.description="Docker Images for Base on Alpine. (i386, amd64, arm32v6, arm32v7, arm64, ppc64le,riscv64, s390x)" \
-    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/base" \
-    org.opencontainers.image.base.name="snowdreamtech/base:alpine" \
+    org.opencontainers.image.title="PostgreSQL Image Based On Alpine" \
+    org.opencontainers.image.description="Docker Images for PostgreSQL on Alpine. (i386, amd64, arm32v6, arm32v7, arm64, ppc64le,riscv64, s390x)" \
+    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/postgresql" \
+    org.opencontainers.image.base.name="snowdreamtech/postgresql:alpine" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.source="https://github.com/snowdreamtech/base" \
+    org.opencontainers.image.source="https://github.com/snowdreamtech/postgresql" \
     org.opencontainers.image.vendor="Snowdream Tech" \
-    org.opencontainers.image.version="3.22.2" \
-    org.opencontainers.image.url="https://github.com/snowdreamtech/base"
+    org.opencontainers.image.version="15.13.0" \
+    org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
     
 # Switch to the user
 USER root
@@ -19,7 +19,7 @@ USER root
 WORKDIR /root
 
 # keep the docker container running
-ARG KEEPALIVE=0 \
+ARG KEEPALIVE=1 \
     # The cap_net_bind_service capability in Linux allows a process to bind a socket to Internet domain privileged ports, 
     # which are port numbers less than 1024. 
     CAP_NET_BIND_SERVICE=0 \
@@ -48,6 +48,16 @@ ENV KEEPALIVE=${KEEPALIVE} \
     USER=${USER} \
     WORKDIR=${WORKDIR} 
 
+ENV POSTGRES_VERSION=15.13-r0 \
+    POSTGRES_PORT=5432 \
+    POSTGRES_MAX_CONNECTIONS=100 \
+    POSTGRES_ROOT_PASSWORD="" \
+    POSTGRES_USER='' \
+    POSTGRES_PASSWORD='' \
+    POSTGRES_DB='' \
+    POSTGRES_HOST_AUTH_METHOD='scram-sha-256'  \
+    POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
+
 # Create a user with PUID and PGID
 RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 ] && [ "${PGID}" -ne 0 ]; then \
     addgroup -g ${PGID} ${USER}; \
@@ -57,7 +67,9 @@ RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 
 
 RUN apk update \
     && apk add --no-cache \
-    vim
+    postgresql15=${POSTGRES_VERSION}  \
+    postgresql15-client=${POSTGRES_VERSION} \
+    postgresql15-contrib=${POSTGRES_VERSION} 
 
 # Enable CAP_NET_BIND_SERVICE
 # RUN if [ "${USER}" != "root" ] && [ "${CAP_NET_BIND_SERVICE}" -eq 1 ]; then \

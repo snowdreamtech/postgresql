@@ -2,15 +2,15 @@ FROM snowdreamtech/debian:13.1.0
 
 # OCI annotations to image
 LABEL org.opencontainers.image.authors="Snowdream Tech" \
-    org.opencontainers.image.title="Base Image Based On Debian" \
-    org.opencontainers.image.description="Docker Images for Base on Debian. (i386,amd64,arm32v5,arm32v7,arm64,mips64le,ppc64le,s390x)" \
-    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/base" \
-    org.opencontainers.image.base.name="snowdreamtech/base:debian" \
+    org.opencontainers.image.title="PostgreSQL Image Based On Debian" \
+    org.opencontainers.image.description="Docker Images for PostgreSQL on Debian. (i386,amd64,arm32v5,arm32v7,arm64,mips64le,ppc64le,s390x)" \
+    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/postgresql" \
+    org.opencontainers.image.base.name="snowdreamtech/postgresql:debian" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.source="https://github.com/snowdreamtech/base" \
+    org.opencontainers.image.source="https://github.com/snowdreamtech/postgresql" \
     org.opencontainers.image.vendor="Snowdream Tech" \
-    org.opencontainers.image.version="13.1.0" \
-    org.opencontainers.image.url="https://github.com/snowdreamtech/base"
+    org.opencontainers.image.version="15.10.0" \
+    org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
 
 # Switch to the user
 USER root
@@ -20,7 +20,7 @@ WORKDIR /root
 
 # keep the docker container running
 ARG DEBIAN_FRONTEND=noninteractive \
-    KEEPALIVE=0 \
+    KEEPALIVE=1 \
     # The cap_net_bind_service capability in Linux allows a process to bind a socket to Internet domain privileged ports, 
     # which are port numbers less than 1024. 
     CAP_NET_BIND_SERVICE=0 \
@@ -50,6 +50,16 @@ ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
     USER=${USER} \
     WORKDIR=${WORKDIR} 
 
+ENV POSTGRES_VERSION=15.10-0+deb12u1 \
+    POSTGRES_PORT=5432 \
+    POSTGRES_MAX_CONNECTIONS=100 \
+    POSTGRES_ROOT_PASSWORD="" \
+    POSTGRES_USER='' \
+    POSTGRES_PASSWORD='' \
+    POSTGRES_DB='' \
+    POSTGRES_HOST_AUTH_METHOD='scram-sha-256'  \
+    POSTGRES_DISALLOW_USER_LOGIN_REMOTELY=1
+
 # Create a user with PUID and PGID
 RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 ] && [ "${PGID}" -ne 0 ]; then \
     addgroup --gid ${PGID} ${USER}; \
@@ -60,7 +70,9 @@ RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 
 RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy update  \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \ 
-    vim \
+    postgresql-15=${POSTGRES_VERSION}  \
+    postgresql-client-15=${POSTGRES_VERSION} \
+    postgresql-contrib=${POSTGRES_VERSION} \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy --purge autoremove \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy clean \
     && rm -rf /var/lib/apt/lists/* \
