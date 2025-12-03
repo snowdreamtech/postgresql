@@ -463,9 +463,9 @@ if [ "${POSTGRES_PORT}" -gt 0 ]; then
 	}
 fi
 
-if [ -n "${POSTGRES_HOST_AUTH_METHOD}" ] && [ "${POSTGRES_HOST_AUTH_METHOD}" != "trust" ]; then
+if [ -n "${POSTGRES_HOST_AUTHMETHOD}" ] && [ "${POSTGRES_HOST_AUTHMETHOD}" != "trust" ]; then
 	{
-		sed -i "s|\#*password_encryption\s*=\s*scram-sha-256\|md5\|password|password_encryption = ${POSTGRES_HOST_AUTH_METHOD}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+		sed -i "s|\#*password_encryption\s*=\s*scram-sha-256\|md5\|password|password_encryption = ${POSTGRES_HOST_AUTHMETHOD}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 	}
 fi
 
@@ -479,8 +479,8 @@ fi
 # https://wiki.alpinelinux.org/wiki/Postgresql_16
 if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
 	{
-		sed -i "/^\s*host\s*all\s*all\s*0\.0\.0\.0\/0\s*${POSTGRES_HOST_AUTH_METHOD}/d" "${POSTGRES_HBA_CONFIG_PATH}"
-		echo "host    all             all             0.0.0.0/0               ${POSTGRES_HOST_AUTH_METHOD}" >>"${POSTGRES_HBA_CONFIG_PATH}"
+		sed -i "/^\s*host\s*all\s*all\s*0\.0\.0\.0\/0\s*${POSTGRES_HOST_AUTHMETHOD}/d" "${POSTGRES_HBA_CONFIG_PATH}"
+		echo "host    all             all             0.0.0.0/0               ${POSTGRES_HOST_AUTHMETHOD}" >>"${POSTGRES_HBA_CONFIG_PATH}"
 	}
 fi
 
