@@ -50,7 +50,7 @@ ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
     USER=${USER} \
     WORKDIR=${WORKDIR} 
 
-ENV POSTGRES_VERSION=15.10-0+deb12u1 \
+ENV POSTGRES_VERSION=17.6-0+deb13u1 \
     POSTGRES_PORT=5432 \
     POSTGRES_MAX_CONNECTIONS=100 \
     POSTGRES_ROOT_PWD="" \
@@ -70,9 +70,8 @@ RUN if [ "${USER}" != "root" ] && [ ! -d "/home/${USER}" ] && [ "${PUID}" -ne 0 
 RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy update  \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \ 
-    postgresql-15=${POSTGRES_VERSION}  \
-    postgresql-client-15=${POSTGRES_VERSION} \
-    postgresql-contrib=${POSTGRES_VERSION} \
+    postgresql-17=${POSTGRES_VERSION}  \
+    postgresql-client-17=${POSTGRES_VERSION} \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy --purge autoremove \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy clean \
     && rm -rf /var/lib/apt/lists/* \
