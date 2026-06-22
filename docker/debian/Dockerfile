@@ -17,21 +17,25 @@ ARG BUILDTIME \
     PGID=0 \
     PUID=0 \
     USER=root \
-    WORKDIR=/root
+    WORKDIR=/root \
+    POSTGRESQL_VERSION=17+278
 
 # Standard OCI Metadata (https://github.com/opencontainers/image-spec)
 LABEL org.opencontainers.image.authors="Snowdream Tech" \
-    org.opencontainers.image.title="Base Image Based On Debian" \
-    org.opencontainers.image.description="Docker Images for Base on Debian. (i386, amd64, arm32v5, arm32v7, arm64, mips64le, ppc64le, s390x)" \
-    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/base" \
-    org.opencontainers.image.base.name="snowdreamtech/base:debian" \
+    org.opencontainers.image.title="PostgreSQL Image Based On Debian" \
+    org.opencontainers.image.description="Docker Images for PostgreSQL on Debian. (i386, amd64, arm32v5, arm32v7, arm64, mips64le, ppc64le, s390x)" \
+    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/postgresql" \
+    org.opencontainers.image.base.name="snowdreamtech/debian:13.5.0" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.source="https://github.com/snowdreamtech/base" \
+    org.opencontainers.image.source="https://github.com/snowdreamtech/postgresql" \
     org.opencontainers.image.vendor="Snowdream Tech" \
-    org.opencontainers.image.version="${VERSION:-13.5.0}" \
     org.opencontainers.image.created="${BUILDTIME}" \
     org.opencontainers.image.revision="${REVISION}" \
-    org.opencontainers.image.url="https://github.com/snowdreamtech/base"
+    org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
+
+# x-release-please-start-version
+LABEL org.opencontainers.image.version="${VERSION:-17.2.0}"
+# x-release-please-end
 
 # Runtime Environment Configuration
 ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
@@ -44,13 +48,16 @@ ENV DEBIAN_FRONTEND=${DEBIAN_FRONTEND} \
     PGID=${PGID} \
     PUID=${PUID} \
     USER=${USER} \
-    WORKDIR=${WORKDIR}
+    WORKDIR=${WORKDIR} \
+    POSTGRESQL_VERSION=${POSTGRESQL_VERSION}
 
-# Additional tooling and configuration for Base image
+# Install PostgreSQL
 RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy update \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \
-    vim \
+    postgresql=${POSTGRESQL_VERSION} \
+    postgresql-client=${POSTGRESQL_VERSION} \
+    postgresql-contrib=${POSTGRESQL_VERSION} \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy --purge autoremove \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -66,6 +73,7 @@ RUN chmod +x /usr/local/bin/entrypoint.d/*
 HEALTHCHECK NONE
 
 # Process Execution
+EXPOSE 5432
 USER root
 WORKDIR /root
 ENTRYPOINT ["docker-entrypoint.sh"]

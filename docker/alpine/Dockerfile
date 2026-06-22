@@ -16,21 +16,25 @@ ARG BUILDTIME \
     PGID=0 \
     PUID=0 \
     USER=root \
-    WORKDIR=/root
+    WORKDIR=/root \
+    POSTGRESQL_VERSION=17.2.0-r0
 
 # Standard OCI Metadata (https://github.com/opencontainers/image-spec)
 LABEL org.opencontainers.image.authors="Snowdream Tech" \
-    org.opencontainers.image.title="Base Image Based On Alpine" \
-    org.opencontainers.image.description="Docker Images for Base on Alpine. (i386, amd64, arm32v6, arm32v7, arm64, ppc64le, riscv64, s390x)" \
-    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/base" \
-    org.opencontainers.image.base.name="snowdreamtech/base:alpine" \
+    org.opencontainers.image.title="PostgreSQL Image Based On Alpine" \
+    org.opencontainers.image.description="Docker Images for PostgreSQL on Alpine. (i386, amd64, arm32v6, arm32v7, arm64, ppc64le, riscv64, s390x)" \
+    org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/postgresql" \
+    org.opencontainers.image.base.name="snowdreamtech/alpine:3.24.0" \
     org.opencontainers.image.licenses="MIT" \
-    org.opencontainers.image.source="https://github.com/snowdreamtech/base" \
+    org.opencontainers.image.source="https://github.com/snowdreamtech/postgresql" \
     org.opencontainers.image.vendor="Snowdream Tech" \
-    org.opencontainers.image.version="${VERSION:-3.24.0}" \
     org.opencontainers.image.created="${BUILDTIME}" \
     org.opencontainers.image.revision="${REVISION}" \
-    org.opencontainers.image.url="https://github.com/snowdreamtech/base"
+    org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
+
+# x-release-please-start-version
+LABEL org.opencontainers.image.version="${VERSION:-17.2.0}"
+# x-release-please-end
 
 # Runtime Environment Configuration
 ENV KEEPALIVE=${KEEPALIVE} \
@@ -42,12 +46,14 @@ ENV KEEPALIVE=${KEEPALIVE} \
     PGID=${PGID} \
     PUID=${PUID} \
     USER=${USER} \
-    WORKDIR=${WORKDIR}
+    WORKDIR=${WORKDIR} \
+    POSTGRESQL_VERSION=${POSTGRESQL_VERSION}
 
-# Additional tooling and configuration for Base image
-RUN apk update \
-    && apk add --no-cache \
-    vim
+# Install PostgreSQL
+RUN apk add --no-cache \
+    postgresql=~${POSTGRESQL_VERSION%-[a-z]*} \
+    postgresql-client=~${POSTGRESQL_VERSION%-[a-z]*} \
+    postgresql-contrib=~${POSTGRESQL_VERSION%-[a-z]*}
 
 # Container Orchestration Files
 COPY entrypoint.d /usr/local/bin/entrypoint.d
@@ -58,6 +64,7 @@ RUN chmod +x /usr/local/bin/entrypoint.d/*
 HEALTHCHECK NONE
 
 # Process Execution
+EXPOSE 5432
 USER root
 WORKDIR /root
 ENTRYPOINT ["docker-entrypoint.sh"]
