@@ -10,81 +10,85 @@ group="postgres"
 data_dir="/var/lib/pgsql/data"
 conf_dir="$data_dir"
 logfile="/var/lib/pgsql/postmaster.log"
+# shellcheck disable=SC2034
 port=5432
 
+# shellcheck disable=SC2034
 conffile="$conf_dir/postgresql.conf"
+# shellcheck disable=SC2034
 pidfile="$data_dir/postmaster.pid"
 
 psql_command() {
-	su -s /bin/sh $user -c "psql --no-psqlrc --no-align --tuples-only -q -c \"$1\""
+  su -s /bin/sh $user -c "psql --no-psqlrc --no-align --tuples-only -q -c \"$1\""
 }
 
 modify_root_password() {
-	if [ -n "${POSTGRES_ROOT_PWD}" ]; then
-		out=$(psql_command "ALTER USER postgres WITH PASSWORD '${POSTGRES_ROOT_PWD}';")
-		if [ "$out" ]; then
-			echo "$out" | while read -r line; do echo "  $line"; done
-		fi
-	fi
+  if [ -n "${POSTGRES_ROOT_PWD}" ]; then
+    out=$(psql_command "ALTER USER postgres WITH PASSWORD '${POSTGRES_ROOT_PWD}';")
+    if [ "$out" ]; then
+      echo "$out" | while read -r line; do echo "  $line"; done
+    fi
+  fi
 }
 
 create_user_if_not_exist() {
-	if [ -n "${POSTGRES_USER}" ]; then
-		userAlreadyExists=$(psql_command "SELECT 1 FROM pg_user WHERE usename='${POSTGRES_USER}';")
+  if [ -n "${POSTGRES_USER}" ]; then
+    userAlreadyExists=$(psql_command "SELECT 1 FROM pg_user WHERE usename='${POSTGRES_USER}';")
 
-		if [ "${userAlreadyExists}" ] && [ "${userAlreadyExists}" = "1" ]; then
-			echo "user ${POSTGRES_USER} already exists."
-		else
-			if [ -z "${POSTGRES_PWD}" ]; then
-				POSTGRES_PWD=$(openssl rand -base64 33 || tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 33)
-				echo "generate random password for user ${POSTGRES_USER} : ${POSTGRES_PWD}"
-			fi
+    if [ "${userAlreadyExists}" ] && [ "${userAlreadyExists}" = "1" ]; then
+      echo "user ${POSTGRES_USER} already exists."
+    else
+      if [ -z "${POSTGRES_PWD}" ]; then
+        POSTGRES_PWD=$(openssl rand -base64 33 || tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 33)
+        echo "generate random password for user ${POSTGRES_USER} : ${POSTGRES_PWD}"
+      fi
 
-			userCreatedResult=$(psql_command "CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PWD}';")
-			if [ -z "${userCreatedResult}" ]; then
-				echo "user ${POSTGRES_USER} has been created with your password."
-			fi
-		fi
-	fi
+      userCreatedResult=$(psql_command "CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PWD}';")
+      if [ -z "${userCreatedResult}" ]; then
+        echo "user ${POSTGRES_USER} has been created with your password."
+      fi
+    fi
+  fi
 }
 
 create_user_and_database_if_not_exist() {
-	create_user_if_not_exist
+  create_user_if_not_exist
 
-	if [ -n "${POSTGRES_DB}" ]; then
-		dbAlreadyExists=$(psql_command "SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}';")
+  if [ -n "${POSTGRES_DB}" ]; then
+    dbAlreadyExists=$(psql_command "SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}';")
 
-		if [ "${dbAlreadyExists}" ] && [ "${dbAlreadyExists}" = "1" ]; then
-			echo "database ${POSTGRES_DB} already exists."
-		else
-			dbCreatedResult=$(psql_command "CREATE DATABASE ${POSTGRES_DB};")
-			if [ -z "${dbCreatedResult}" ]; then
-				echo "database ${POSTGRES_DB} has been created."
-				dbGrantdResult=$(psql_command "GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB} TO ${POSTGRES_USER};")
-				if [ -z "${dbGrantdResult}" ]; then
-					echo "grant all privileges on database ${POSTGRES_DB} to ${POSTGRES_USER}."
-				fi
-			fi
-		fi
-	fi
+    if [ "${dbAlreadyExists}" ] && [ "${dbAlreadyExists}" = "1" ]; then
+      echo "database ${POSTGRES_DB} already exists."
+    else
+      dbCreatedResult=$(psql_command "CREATE DATABASE ${POSTGRES_DB};")
+      if [ -z "${dbCreatedResult}" ]; then
+        echo "database ${POSTGRES_DB} has been created."
+        dbGrantdResult=$(psql_command "GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB} TO ${POSTGRES_USER};")
+        if [ -z "${dbGrantdResult}" ]; then
+          echo "grant all privileges on database ${POSTGRES_DB} to ${POSTGRES_USER}."
+        fi
+      fi
+    fi
+  fi
 }
 
 setup() {
-	echo "Creating a new PostgreSQL database cluster"
+  echo "Creating a new PostgreSQL database cluster"
 
-	if [ -d "$data_dir/base" ]; then
-		echo "$data_dir/base already exists!"; return 1
-	fi
+  if [ -d "$data_dir/base" ]; then
+    echo "$data_dir/base already exists!"
+    return 1
+  fi
 
-	mkdir -p "$data_dir"
-	chown -R $user:$group "$data_dir"
-	
-	initdb_opts="-E UTF-8 --locale=C --data-checksums"
-	su -s /bin/sh $user -c "/usr/bin/initdb $initdb_opts --pgdata $data_dir"
+  mkdir -p "$data_dir"
+  chown -R $user:$group "$data_dir"
+
+  initdb_opts="-E UTF-8 --locale=C --data-checksums"
+  su -s /bin/sh $user -c "/usr/bin/initdb $initdb_opts --pgdata $data_dir"
 }
 
 if [ ! -d "$data_dir/base" ]; then
-    setup
+  setup
 fi
 
 POSTGRES_CONFIG_PATH="$conf_dir"
@@ -92,29 +96,29 @@ POSTGRES_DATABASE_CONFIG_PATH="${POSTGRES_CONFIG_PATH}/postgresql.conf"
 POSTGRES_HBA_CONFIG_PATH="${POSTGRES_CONFIG_PATH}/pg_hba.conf"
 
 if [ -z "${POSTGRES_ROOT_PWD}" ]; then
-	POSTGRES_ROOT_PWD=$(openssl rand -base64 33 || tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c 33)
-	echo "generate random password for user postgres : ${POSTGRES_ROOT_PWD}"
+  POSTGRES_ROOT_PWD=$(openssl rand -base64 33 || tr -dc 'a-zA-Z0-9' </dev/urandom | head -c 33)
+  echo "generate random password for user postgres : ${POSTGRES_ROOT_PWD}"
 fi
 
 if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
-	sed -i "s|\#*listen_addresses\s*=\s*'localhost'|listen_addresses = '*'|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+  sed -i "s|\#*listen_addresses\s*=\s*'localhost'|listen_addresses = '*'|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
 if [ "${POSTGRES_PORT}" -gt 0 ]; then
-	sed -i "s|\#*port\s*=\s*[0-9]+|port = ${POSTGRES_PORT}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+  sed -i "s|\#*port\s*=\s*[0-9]+|port = ${POSTGRES_PORT}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
 if [ -n "${POSTGRES_HOST_AUTHMETHOD}" ] && [ "${POSTGRES_HOST_AUTHMETHOD}" != "trust" ]; then
-	sed -i "s|\#*password_encryption\s*=\s*scram-sha-256\|md5\|password|password_encryption = ${POSTGRES_HOST_AUTHMETHOD}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+  sed -i "s|\#*password_encryption\s*=\s*scram-sha-256\|md5\|password|password_encryption = ${POSTGRES_HOST_AUTHMETHOD}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
 if [ "${POSTGRES_MAX_CONNECTIONS}" -gt 0 ]; then
-	sed -i "s|\#*max_connections\s*=\s*[0-9]+|max_connections = ${POSTGRES_MAX_CONNECTIONS}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+  sed -i "s|\#*max_connections\s*=\s*[0-9]+|max_connections = ${POSTGRES_MAX_CONNECTIONS}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
 if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
-	sed -i "/^[[:space:]]*host[[:space:]]*all[[:space:]]*all[[:space:]]*0\.0\.0\.0\/0/d" "${POSTGRES_HBA_CONFIG_PATH}"
-	echo "host    all             all             0.0.0.0/0               ${POSTGRES_HOST_AUTHMETHOD}" >>"${POSTGRES_HBA_CONFIG_PATH}"
+  sed -i "/^[[:space:]]*host[[:space:]]*all[[:space:]]*all[[:space:]]*0\.0\.0\.0\/0/d" "${POSTGRES_HBA_CONFIG_PATH}"
+  echo "host    all             all             0.0.0.0/0               ${POSTGRES_HOST_AUTHMETHOD}" >>"${POSTGRES_HBA_CONFIG_PATH}"
 fi
 
 echo "Starting PostgreSQL..."
