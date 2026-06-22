@@ -16,14 +16,14 @@ conffile="$conf_dir/postgresql.conf"
 pidfile="$data_dir/postmaster.pid"
 
 psql_command() {
-	su $user -c "psql --no-psqlrc --no-align --tuples-only -q -c \"$1\""
+	su -s /bin/sh $user -c "psql --no-psqlrc --no-align --tuples-only -q -c \"$1\""
 }
 
 modify_root_password() {
 	if [ -n "${POSTGRES_ROOT_PWD}" ]; then
 		out=$(psql_command "ALTER USER postgres WITH PASSWORD '${POSTGRES_ROOT_PWD}';")
 		if [ "$out" ]; then
-			for line in $out; do echo "  $line"; done
+			echo "$out" | while read -r line; do echo "  $line"; done
 		fi
 	fi
 }
@@ -32,7 +32,7 @@ create_user_if_not_exist() {
 	if [ -n "${POSTGRES_USER}" ]; then
 		userAlreadyExists=$(psql_command "SELECT 1 FROM pg_user WHERE usename='${POSTGRES_USER}';")
 
-		if [ "${userAlreadyExists}" ] && [ "${userAlreadyExists}" -eq 1 ]; then
+		if [ "${userAlreadyExists}" ] && [ "${userAlreadyExists}" = "1" ]; then
 			echo "user ${POSTGRES_USER} already exists."
 		else
 			if [ -z "${POSTGRES_PWD}" ]; then
@@ -54,7 +54,7 @@ create_user_and_database_if_not_exist() {
 	if [ -n "${POSTGRES_DB}" ]; then
 		dbAlreadyExists=$(psql_command "SELECT 1 FROM pg_database WHERE datname = '${POSTGRES_DB}';")
 
-		if [ "${dbAlreadyExists}" ] && [ "${dbAlreadyExists}" -eq 1 ]; then
+		if [ "${dbAlreadyExists}" ] && [ "${dbAlreadyExists}" = "1" ]; then
 			echo "database ${POSTGRES_DB} already exists."
 		else
 			dbCreatedResult=$(psql_command "CREATE DATABASE ${POSTGRES_DB};")
@@ -80,7 +80,7 @@ setup() {
 	chown -R $user:$group "$data_dir"
 	
 	initdb_opts="-E UTF-8 --locale=C --data-checksums"
-	su $user -c "/usr/bin/initdb $initdb_opts --pgdata $data_dir"
+	su -s /bin/sh $user -c "/usr/bin/initdb $initdb_opts --pgdata $data_dir"
 }
 
 if [ ! -d "$data_dir/base" ]; then
@@ -113,12 +113,12 @@ if [ "${POSTGRES_MAX_CONNECTIONS}" -gt 0 ]; then
 fi
 
 if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
-	sed -i "/^\s*host\s*all\s*all\s*0\.0\.0\.0\/0\s*${POSTGRES_HOST_AUTHMETHOD}/d" "${POSTGRES_HBA_CONFIG_PATH}"
+	sed -i "/^[[:space:]]*host[[:space:]]*all[[:space:]]*all[[:space:]]*0\.0\.0\.0\/0/d" "${POSTGRES_HBA_CONFIG_PATH}"
 	echo "host    all             all             0.0.0.0/0               ${POSTGRES_HOST_AUTHMETHOD}" >>"${POSTGRES_HBA_CONFIG_PATH}"
 fi
 
 echo "Starting PostgreSQL..."
-su $user -c "/usr/bin/pg_ctl start -D $data_dir -l $logfile -w"
+su -s /bin/sh $user -c "/usr/bin/pg_ctl start -D $data_dir -l $logfile -w"
 
 modify_root_password
 create_user_and_database_if_not_exist
