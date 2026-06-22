@@ -179,9 +179,9 @@ docker run -d \
 
 ```yaml
 services:
-  base:
+  postgresql:
     image: snowdreamtech/postgresql:debian
-    container_name: base
+    container_name: postgresql
     environment:
       - TZ=Asia/Shanghai
     restart: unless-stopped
@@ -191,9 +191,9 @@ services:
 
 ```yaml
 services:
-  base:
+  postgresql:
     image: snowdreamtech/postgresql:debian
-    container_name: base
+    container_name: postgresql
     environment:
       - TZ=Asia/Shanghai
       - DEBUG=true
