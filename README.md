@@ -209,13 +209,13 @@ Images follow semantic versioning with the format: `{major}.{minor}.{patch}-{var
 
 Examples:
 
-- `snowdreamtech/postgresql:13.5.0-debian`
-- `snowdreamtech/postgresql:3.24.0-alpine`
-- `snowdreamtech/postgresql:10.2.0-rocky`
+- `snowdreamtech/postgresql:17.2.0-debian`
+- `snowdreamtech/postgresql:17.2.0-alpine`
+- `snowdreamtech/postgresql:17.2.0-rocky`
 
 This format allows:
 
-- **Full version pinning**: `13.5.0-debian` (exact version)
+- **Full version pinning**: `17.2.0-debian` (exact version)
 - **Variant latest tag**: `latest-debian` (tracks most recent release for Debian)
 - **Global latest tag**: `latest` (tracks most recent release, defaults to Debian)
 
