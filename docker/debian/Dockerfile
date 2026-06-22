@@ -34,7 +34,7 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
 
 # x-release-please-start-version
-LABEL org.opencontainers.image.version="${VERSION:-17.2.0}"
+LABEL org.opencontainers.image.version="${VERSION:-17.10.0}"
 # x-release-please-end
 
 # Runtime Environment Configuration

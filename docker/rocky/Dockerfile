@@ -17,7 +17,7 @@ ARG BUILDTIME \
     PUID=0 \
     USER=root \
     WORKDIR=/root \
-    POSTGRESQL_VERSION=16.13-1.el10_1
+    POSTGRESQL_VERSION=18.3-1.el10
 
 # Standard OCI Metadata (https://github.com/opencontainers/image-spec)
 LABEL org.opencontainers.image.authors="Snowdream Tech" \
@@ -33,7 +33,7 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
 
 # x-release-please-start-version
-LABEL org.opencontainers.image.version="${VERSION:-17.2.0}"
+LABEL org.opencontainers.image.version="${VERSION:-18.3.0}"
 # x-release-please-end
 
 # Runtime Environment Configuration
@@ -53,8 +53,8 @@ ENV KEEPALIVE=${KEEPALIVE} \
 RUN set -eux \
     && dnf -y --allowerasing update \
     && dnf -y --allowerasing install \
-    postgresql-server-${POSTGRESQL_VERSION} \
-    postgresql-contrib-${POSTGRESQL_VERSION} \
+    postgresql18-server-${POSTGRESQL_VERSION} \
+    postgresql18-contrib-${POSTGRESQL_VERSION} \
     && dnf -y --allowerasing autoremove \
     && dnf -y --allowerasing clean all \
     && rm -rf /var/cache/dnf \

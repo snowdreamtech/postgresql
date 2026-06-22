@@ -17,7 +17,7 @@ ARG BUILDTIME \
     PUID=0 \
     USER=root \
     WORKDIR=/root \
-    POSTGRESQL_VERSION=17.2.0-r0
+    POSTGRESQL_VERSION=18.4-r0
 
 # Standard OCI Metadata (https://github.com/opencontainers/image-spec)
 LABEL org.opencontainers.image.authors="Snowdream Tech" \
@@ -33,7 +33,7 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
 
 # x-release-please-start-version
-LABEL org.opencontainers.image.version="${VERSION:-17.2.0}"
+LABEL org.opencontainers.image.version="${VERSION:-18.4.0}"
 # x-release-please-end
 
 # Runtime Environment Configuration
@@ -51,9 +51,9 @@ ENV KEEPALIVE=${KEEPALIVE} \
 
 # Install PostgreSQL
 RUN apk add --no-cache \
-    postgresql=~${POSTGRESQL_VERSION%-[a-z]*} \
-    postgresql-client=~${POSTGRESQL_VERSION%-[a-z]*} \
-    postgresql-contrib=~${POSTGRESQL_VERSION%-[a-z]*}
+    postgresql18=~${POSTGRESQL_VERSION%-[a-z]*} \
+    postgresql18-client=~${POSTGRESQL_VERSION%-[a-z]*} \
+    postgresql18-contrib=~${POSTGRESQL_VERSION%-[a-z]*}
 
 # Container Orchestration Files
 COPY entrypoint.d /usr/local/bin/entrypoint.d

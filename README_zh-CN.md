@@ -209,13 +209,13 @@ services:
 
 示例：
 
-- `snowdreamtech/postgresql:17.2.0-debian`
-- `snowdreamtech/postgresql:17.2.0-alpine`
-- `snowdreamtech/postgresql:17.2.0-rocky`
+- `snowdreamtech/postgresql:17.10.0-debian`
+- `snowdreamtech/postgresql:18.4.0-alpine`
+- `snowdreamtech/postgresql:18.3.0-rocky`
 
 此格式允许：
 
-- **完整版本固定**：`17.2.0-debian`（精确版本）
+- **完整版本固定**：`17.10.0-debian`（精确版本）
 - **变体最新标签**：`latest-debian`（跟踪 Debian 最新版本）
 - **全局最新标签**：`latest`（跟踪最新版本，默认指向 Debian）
 
