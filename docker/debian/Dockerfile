@@ -57,7 +57,6 @@ RUN set -eux \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy install --no-install-recommends \
     postgresql=${POSTGRESQL_VERSION} \
     postgresql-client=${POSTGRESQL_VERSION} \
-    postgresql-contrib=${POSTGRESQL_VERSION} \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy --purge autoremove \
     && DEBIAN_FRONTEND=noninteractive apt-get -qqy clean \
     && rm -rf /var/lib/apt/lists/* \
