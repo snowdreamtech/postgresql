@@ -7,17 +7,27 @@ if [ "$DEBUG" = "true" ]; then echo "→ [postgresql] Starting postgresql..."; f
 pg_version=$(pg_versions get-default)
 
 name="PostgreSQL $pg_version"
+# shellcheck disable=SC2034
 description="PostgreSQL server"
 
+# shellcheck disable=SC2034
 extra_started_commands="stop_fast stop_force stop_smart reload reload_force promote"
+# shellcheck disable=SC2034
 description_stop_fast="Stop using Fast Shutdown mode (SIGINT)"
+# shellcheck disable=SC2034
 description_stop_force="Stop using Immediate Shutdown mode (SIGQUIT)"
+# shellcheck disable=SC2034
 description_stop_smart="Stop using Smart Shutdown mode (SIGTERM)"
+# shellcheck disable=SC2034
 description_reload="Reload configuration"
+# shellcheck disable=SC2034
 description_reload_force="Reload configuration and restart if needed"
+# shellcheck disable=SC2034
 description_promote="Promote standby server to master - exit recovery and begin read-write operations"
 
+# shellcheck disable=SC2034
 extra_stopped_commands="setup"
+# shellcheck disable=SC2034
 description_setup="Initialize a new $name cluster"
 
 user="postgres"
@@ -48,13 +58,13 @@ start_stop_daemon_args="
     --wait 100"
 
 service_set_value() {
-  local service_name=$1
-  local value=$2
+  local service_name="$1"
+  local value="$2"
   echo "$service_name=$value" >>/tmp/service_values
 }
 
 service_get_value() {
-  local service_name=$1
+  local service_name="$1"
   grep "^$service_name=" /tmp/service_values | cut -d'=' -f2
 }
 
@@ -76,7 +86,9 @@ start_pre() {
   check_deprecated_var env_vars 'export NAME=VALUE'
 
   # For backward compatibility only.
-  [ "$rude_quit" = no ] && [ "stop_fast_timeout" -eq 10 ] && stop_fast_timeout=0
+  # shellcheck disable=SC2154,SC2050,SC2170
+  [ "$rude_quit" = no ] && [ "$stop_fast_timeout" -eq 10 ] && stop_fast_timeout=0
+  # shellcheck disable=SC2154
   [ "$force_quit" = yes ] && [ "$stop_force_timeout" -eq 0 ] && stop_force_timeout=2
 
   if [ ! -d "$data_dir/base" ]; then
@@ -95,8 +107,11 @@ start_pre() {
     conf_dir=$data_dir
   fi
 
-  local socket_dirs=$(get_config "unix_socket_directories" "/run/postgresql")
-  local port=$(get_config "port" "$port")
+  local socket_dirs port
+  # shellcheck disable=SC2046
+  socket_dirs=$(get_config "unix_socket_directories" "/run/postgresql")
+  # shellcheck disable=SC2046
+  port=$(get_config "port" "$port")
 
   start_stop_daemon_args="$start_stop_daemon_args --env PGPORT=$port"
 
@@ -127,6 +142,7 @@ start() {
   ebegin "Starting $name"
 
   rm -f "$pidfile"
+  # shellcheck disable=SC2086
   start-stop-daemon --start \
     $start_stop_daemon_args \
     --exec /usr/bin/pg_ctl \
@@ -148,8 +164,9 @@ start() {
 }
 
 stop() {
-  local command=$(service_get_value "command" || echo "$command")
-  local pidfile=$(service_get_value "pidfile" || echo "$pidfile")
+  local command pidfile
+  command=$(service_get_value "command" || echo "$command")
+  pidfile=$(service_get_value "pidfile" || echo "$pidfile")
   local retry=''
 
   [ "$stop_smart_timeout" -eq 0 ] ||
@@ -186,8 +203,9 @@ stop_force() {
 }
 
 _stop() {
-  local command=$(service_get_value "command" || echo "$command")
-  local pidfile=$(service_get_value "pidfile" || echo "$pidfile")
+  local command pidfile
+  command=$(service_get_value "command" || echo "$command")
+  pidfile=$(service_get_value "pidfile" || echo "$pidfile")
 
   ebegin "Stopping $name ($2)"
 
@@ -242,9 +260,9 @@ setup() {
   fi
 
   if [ "$pg_version" -ge 15 ]; then
-    : ${initdb_opts:="-E UTF-8 --locale-provider=icu --icu-locale=en-001-x-icu --data-checksums"}
+    : "${initdb_opts:="-E UTF-8 --locale-provider=icu --icu-locale=en-001-x-icu --data-checksums"}"
   else
-    : ${initdb_opts:="-E UTF-8 --locale=C --data-checksums"}
+    : "${initdb_opts:="-E UTF-8 --locale=C --data-checksums"}"
   fi
 
   # If data_dir exists, backup configs.
@@ -252,7 +270,7 @@ setup() {
     bkpdir="$(mktemp -d)"
     find "$data_dir" -type f -name "*.conf" -maxdepth 1 \
       -exec mv -v {} "$bkpdir"/ \;
-    rm -rf "$data_dir"/*
+    rm -rf "${data_dir:?}"/*
   fi
 
   install -d -m 0700 -o $user -g $group "$data_dir"
@@ -268,7 +286,8 @@ setup() {
     rm -rf "$bkpdir"
   fi
 
-  local conf_dir=$(readlink -f "$conf_dir")
+  local conf_dir
+  conf_dir=$(readlink -f "$conf_dir")
 
   if [ "${data_dir%/}" != "${conf_dir%/}" ]; then
     # Move configs from data_dir to conf_dir and symlink them to data_dir.
@@ -303,7 +322,7 @@ get_config() {
 }
 
 check_config_errors() {
-  local out
+  local out res
   out=$(psql_command "
         select
           sourcefile || ': line ' || sourceline || ': ' || error ||
@@ -315,9 +334,10 @@ check_config_errors() {
         where error is not null
           and name not in (select name from pg_settings where pending_restart = true);
         ")
-  if [ $? -eq 0 ] && [ "$out" ]; then
+  res=$?
+  if [ $res -eq 0 ] && [ "$out" ]; then
     eerror 'Configuration file contains errors:'
-    printf '%s\n' "$out" | while read line; do
+    printf '%s\n' "$out" | while read -r line; do
       eerror "  $line"
     done
     return 1
@@ -325,10 +345,11 @@ check_config_errors() {
 }
 
 is_pending_restart() {
-  local out
+  local out res
   out=$(psql_command "select name from pg_settings where pending_restart = true;")
+  res=$?
 
-  if [ $? -eq 0 ] && [ "$out" ]; then
+  if [ $res -eq 0 ] && [ "$out" ]; then
     ewarn 'PostgreSQL must be restarted to apply changes in the following parameters:'
     local line
     for line in $out; do
@@ -360,7 +381,9 @@ psql_command() {
 modify_root_password() {
   if [ -n "${POSTGRES_ROOT_PWD}" ]; then
     {
+      local res
       out=$(psql_command "ALTER USER postgres WITH PASSWORD '${POSTGRES_ROOT_PWD}';")
+      res=$?
 
       if [ "$out" ]; then
         echo "$out" | while read -r line; do
@@ -368,7 +391,7 @@ modify_root_password() {
         done
       fi
 
-      if [ $? -eq 0 ]; then
+      if [ $res -eq 0 ]; then
         return 0
       else
         return 1
@@ -458,13 +481,13 @@ fi
 # https://wiki.alpinelinux.org/wiki/Postgresql_16
 if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
   {
-    sed -i "s|\#*listen_addresses\s*=\s*'localhost'|listen_addresses = '*'|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+    sed -i "s|\#*listen_addresses\s*=\s*'localhost'|listen_addresses = '*'|g" "${POSTGRES_DATABASE_CONFIG_PATH}"
   }
 fi
 
 if [ "${POSTGRES_PORT}" -gt 0 ]; then
   {
-    sed -i "s|\#*port\s*=\s*[0-9]+|port = ${POSTGRES_PORT}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
+    sed -i "s|\#*port\s*=\s*[0-9]+|port = ${POSTGRES_PORT}|g" "${POSTGRES_DATABASE_CONFIG_PATH}"
   }
 fi
 
