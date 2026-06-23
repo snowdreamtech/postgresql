@@ -100,11 +100,11 @@ if [ -z "${POSTGRES_ROOT_PWD}" ]; then
   echo "generate random password for user postgres : ${POSTGRES_ROOT_PWD}"
 fi
 
-if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
+if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY:-0}" -eq 0 ]; then
   sed -i "s|\#*listen_addresses\s*=\s*'localhost'|listen_addresses = '*'|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
-if [ "${POSTGRES_PORT}" -gt 0 ]; then
+if [ "${POSTGRES_PORT:-0}" -gt 0 ]; then
   sed -i "s|\#*port\s*=\s*[0-9]+|port = ${POSTGRES_PORT}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
@@ -112,11 +112,11 @@ if [ -n "${POSTGRES_HOST_AUTHMETHOD}" ] && [ "${POSTGRES_HOST_AUTHMETHOD}" != "t
   sed -i "s|\#*password_encryption\s*=\s*scram-sha-256\|md5\|password|password_encryption = ${POSTGRES_HOST_AUTHMETHOD}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
-if [ "${POSTGRES_MAX_CONNECTIONS}" -gt 0 ]; then
+if [ "${POSTGRES_MAX_CONNECTIONS:-0}" -gt 0 ]; then
   sed -i "s|\#*max_connections\s*=\s*[0-9]+|max_connections = ${POSTGRES_MAX_CONNECTIONS}|g" ${POSTGRES_DATABASE_CONFIG_PATH}
 fi
 
-if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY}" -eq 0 ]; then
+if [ "${POSTGRES_DISALLOW_USER_LOGIN_REMOTELY:-0}" -eq 0 ]; then
   sed -i "/^[[:space:]]*host[[:space:]]*all[[:space:]]*all[[:space:]]*0\.0\.0\.0\/0/d" "${POSTGRES_HBA_CONFIG_PATH}"
   echo "host    all             all             0.0.0.0/0               ${POSTGRES_HOST_AUTHMETHOD}" >>"${POSTGRES_HBA_CONFIG_PATH}"
 fi
