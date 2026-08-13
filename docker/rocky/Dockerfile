@@ -1,7 +1,7 @@
 # Base Image (Rocky Variant)
 # Extends snowdreamtech/rocky with additional tooling and configuration.
 
-FROM snowdreamtech/rocky:10.2.0
+FROM ghcr.io/snowdreamtech/rocky:10.2.0
 
 # Build-time Configuration
 ARG BUILDTIME \
@@ -24,17 +24,14 @@ LABEL org.opencontainers.image.authors="Snowdream Tech" \
     org.opencontainers.image.title="PostgreSQL Image Based On Rocky" \
     org.opencontainers.image.description="Docker Images for PostgreSQL on Rocky. (amd64, arm64, ppc64le, s390x)" \
     org.opencontainers.image.documentation="https://hub.docker.com/r/snowdreamtech/postgresql" \
-    org.opencontainers.image.base.name="snowdreamtech/rocky:10.2.0" \
+    org.opencontainers.image.base.name="ghcr.io/snowdreamtech/rocky:10.2.0" \
     org.opencontainers.image.licenses="MIT" \
     org.opencontainers.image.source="https://github.com/snowdreamtech/postgresql" \
     org.opencontainers.image.vendor="Snowdream Tech" \
+    org.opencontainers.image.version="${VERSION}" \
     org.opencontainers.image.created="${BUILDTIME}" \
     org.opencontainers.image.revision="${REVISION}" \
     org.opencontainers.image.url="https://github.com/snowdreamtech/postgresql"
-
-# x-release-please-start-version
-LABEL org.opencontainers.image.version="${VERSION:-18.3.0}"
-# x-release-please-end
 
 # Runtime Environment Configuration
 ENV KEEPALIVE=${KEEPALIVE} \
@@ -51,8 +48,8 @@ ENV KEEPALIVE=${KEEPALIVE} \
 
 # Install PostgreSQL
 RUN set -eux \
-    && dnf -y --allowerasing update \
-    && dnf -y --allowerasing install \
+    && dnf -y --allowerasing --setopt=*.skip_if_unavailable=true update \
+    && dnf -y --allowerasing --setopt=*.skip_if_unavailable=true install \
     postgresql18-server-${POSTGRESQL_VERSION} \
     postgresql18-contrib-${POSTGRESQL_VERSION} \
     && dnf -y --allowerasing autoremove \
