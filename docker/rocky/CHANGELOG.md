@@ -79,9 +79,3 @@
 * remove redundant 10-base-init.sh scripts ([8216c4a](https://github.com/snowdreamtech/postgresql/commit/8216c4ac1b16d145e92894718a697ad7b83729ce))
 * **speckit:** manual auto-commit trigger ([5f8a5a9](https://github.com/snowdreamtech/postgresql/commit/5f8a5a9cba5d6bd42a65eaabfecd6e18b01aeeb0))
 
-## [18.3.0](https://github.com/snowdreamtech/postgresql/compare/rocky-v18.3.0...rocky-v18.3.0) (2026-06-23)
-
-
-### 🐛 Bug Fixes
-
-* set default values for numeric checks in entrypoint scripts ([6cf35df](https://github.com/snowdreamtech/postgresql/commit/6cf35dffd357f232050cc133e8bdeb3123c1ec19))

@@ -82,9 +82,3 @@
 * sync debian build matrix and documentation with upstream ([0d6e613](https://github.com/snowdreamtech/postgresql/commit/0d6e6132c84a368f5b64b9144d9c7d3b7292d746))
 * update debian base image to 13.6.0 ([5f885d5](https://github.com/snowdreamtech/postgresql/commit/5f885d5a771f06d449533f2f3c619d27444822f5))
 
-## [17.10.0](https://github.com/snowdreamtech/postgresql/compare/debian-v17.10.0...debian-v17.10.0) (2026-06-23)
-
-
-### 🐛 Bug Fixes
-
-* set default values for numeric checks in entrypoint scripts ([6cf35df](https://github.com/snowdreamtech/postgresql/commit/6cf35dffd357f232050cc133e8bdeb3123c1ec19))

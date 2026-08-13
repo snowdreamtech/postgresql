@@ -79,9 +79,3 @@
 * remove redundant 10-base-init.sh scripts ([8216c4a](https://github.com/snowdreamtech/postgresql/commit/8216c4ac1b16d145e92894718a697ad7b83729ce))
 * update alpine base image to 3.24.1 ([3021ed3](https://github.com/snowdreamtech/postgresql/commit/3021ed3b4ffa5f8916f5fa46aa4325e8ebf84ba6))
 
-## [18.4.0](https://github.com/snowdreamtech/postgresql/compare/alpine-v18.4.0...alpine-v18.4.0) (2026-06-23)
-
-
-### 🐛 Bug Fixes
-
-* set default values for numeric checks in entrypoint scripts ([6cf35df](https://github.com/snowdreamtech/postgresql/commit/6cf35dffd357f232050cc133e8bdeb3123c1ec19))
