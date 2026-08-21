@@ -1,5 +1,12 @@
 # Changelog
 
+## [18.6.0](https://github.com/snowdreamtech/postgresql/compare/alpine-v18.4.0...alpine-v18.6.0) (2026-08-21)
+
+
+### 🐛 Bug Fixes
+
+* **docker:** update Alpine PostgreSQL version to 18.6-r0 ([c107e58](https://github.com/snowdreamtech/postgresql/commit/c107e585721ab1f68a6d895e9f4d845b2504c044))
+
 ## [18.4.0](https://github.com/snowdreamtech/postgresql/compare/alpine-v18.4.0...alpine-v18.4.0) (2026-08-13)
 
 
@@ -78,4 +85,3 @@
 * **release:** implement automatic changelog deduplication step ([282c220](https://github.com/snowdreamtech/postgresql/commit/282c22081e1ad7a1a010a7f297d20bc7c9b416a7))
 * remove redundant 10-base-init.sh scripts ([8216c4a](https://github.com/snowdreamtech/postgresql/commit/8216c4ac1b16d145e92894718a697ad7b83729ce))
 * update alpine base image to 3.24.1 ([3021ed3](https://github.com/snowdreamtech/postgresql/commit/3021ed3b4ffa5f8916f5fa46aa4325e8ebf84ba6))
-

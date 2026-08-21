@@ -1,5 +1,14 @@
 # Changelog
 
+## [18.3.0](https://github.com/snowdreamtech/postgresql/compare/rocky-v18.3.0...rocky-v18.3.0) (2026-08-21)
+
+
+### ♻️ Miscellaneous Chores
+
+* merge upstream/dev into dev ([71abf1e](https://github.com/snowdreamtech/postgresql/commit/71abf1e33a40365ec03594337afda244e5c551ab))
+* release main ([f02b25f](https://github.com/snowdreamtech/postgresql/commit/f02b25f841191eb64887a336d230ee952d0bf0a2))
+* **release:** deduplicate CHANGELOG headers ([656f92c](https://github.com/snowdreamtech/postgresql/commit/656f92c06f70b548a9fabf4db3fb1f02daf18733))
+
 ## [18.3.0](https://github.com/snowdreamtech/postgresql/compare/rocky-v18.3.0...rocky-v18.3.0) (2026-08-13)
 
 
@@ -79,4 +88,3 @@
 * **release:** implement automatic changelog deduplication step ([282c220](https://github.com/snowdreamtech/postgresql/commit/282c22081e1ad7a1a010a7f297d20bc7c9b416a7))
 * remove redundant 10-base-init.sh scripts ([8216c4a](https://github.com/snowdreamtech/postgresql/commit/8216c4ac1b16d145e92894718a697ad7b83729ce))
 * **speckit:** manual auto-commit trigger ([5f8a5a9](https://github.com/snowdreamtech/postgresql/commit/5f8a5a9cba5d6bd42a65eaabfecd6e18b01aeeb0))
-
