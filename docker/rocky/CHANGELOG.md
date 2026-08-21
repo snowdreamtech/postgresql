@@ -10,8 +10,9 @@
 * update dockerfiles for postgresql installation ([973143a](https://github.com/snowdreamtech/postgresql/commit/973143ac07db4107f103660452723dd134c83345))
 
 
-### 🐛 Bug Fixes
+### ♻️ Miscellaneous Chores
 
+* **docker:** ignore unavailable repos for rocky build ([a6b6b6e](https://github.com/snowdreamtech/base/commit/a6b6b6e5b2288cfeb6b2777902b85e7e5f37f2c3))
 * improve postgresql initialization script robustness across all variants ([51287b4](https://github.com/snowdreamtech/postgresql/commit/51287b4793cb4f541d3a3e617733f3fb9cab0b75))
 * remove static version defaults from OCI image labels to use variable injection exclusively ([da5645a](https://github.com/snowdreamtech/postgresql/commit/da5645ad4d48467290235abbbd9f31ba70bf690f))
 * resolve shellcheck and editorconfig errors reported by unirtm verify ([60a893e](https://github.com/snowdreamtech/postgresql/commit/60a893e7d21a9611d8f51d7fd2e1f42870136457))
