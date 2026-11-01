@@ -1,24 +1,24 @@
-# Base
+# PostgreSQL
 
-[![CI 流水线](https://img.shields.io/github/actions/workflow/status/snowdreamtech/base/ci.yml?branch=main&label=CI%20Pipeline)](https://github.com/snowdreamtech/base/actions/workflows/ci.yml)
-[![CD 自动化发布](https://img.shields.io/github/actions/workflow/status/snowdreamtech/base/cd.yml?branch=main&label=CD%20Pipeline)](https://github.com/snowdreamtech/base/actions/workflows/cd.yml)
-[![CodeQL 审计](https://img.shields.io/github/actions/workflow/status/snowdreamtech/base/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/snowdreamtech/base/actions/workflows/codeql.yml)
-[![安全审计](https://img.shields.io/badge/Security-Zizmor%20%7C%20Trivy%20%7C%20Gitleaks-brightgreen)](https://github.com/snowdreamtech/base/actions/workflows/ci.yml)
-[![许可证: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/MIT)
-![Docker Image Version](https://img.shields.io/docker/v/snowdreamtech/base)
-![Docker Image Size](https://img.shields.io/docker/image-size/snowdreamtech/base/latest)
-![Docker Pulls](https://img.shields.io/docker/pulls/snowdreamtech/base)
-![Docker Stars](https://img.shields.io/docker/stars/snowdreamtech/base)
+[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/snowdreamtech/postgresql/ci.yml?branch=main&label=CI%20Pipeline)](https://github.com/snowdreamtech/postgresql/actions/workflows/ci.yml)
+[![CD Pipeline](https://img.shields.io/github/actions/workflow/status/snowdreamtech/postgresql/cd.yml?branch=main&label=CD%20Pipeline)](https://github.com/snowdreamtech/postgresql/actions/workflows/cd.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/snowdreamtech/postgresql/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/snowdreamtech/postgresql/actions/workflows/codeql.yml)
+[![Security Audit](https://img.shields.io/badge/Security-Zizmor%20%7C%20Trivy%20%7C%20Gitleaks-brightgreen)](https://github.com/snowdreamtech/postgresql/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/license/MIT)
+![Docker Image Version](https://img.shields.io/docker/v/snowdreamtech/postgresql)
+![Docker Image Size](https://img.shields.io/docker/image-size/snowdreamtech/postgresql/latest)
+![Docker Pulls](https://img.shields.io/docker/pulls/snowdreamtech/postgresql)
+![Docker Stars](https://img.shields.io/docker/stars/snowdreamtech/postgresql)
 
 [English](README.md) | [简体中文](README_zh-CN.md)
 
-Docker 基础模板，提供标准化的容器基础，具有灵活的入口点系统、多架构支持以及跨 Alpine、Debian 和 Rocky Linux 发行版的一致配置模式。
+Docker PostgreSQL 镜像，提供标准化的容器基础，具有灵活的入口点系统、多架构支持以及跨 Alpine、Debian 和 Rocky Linux 发行版的一致配置模式。
 
 ## 概述
 
-Docker 基础模板作为构建容器化应用程序的基础起点。它提供：
+PostgreSQL 容器提供：
 
-- **标准化的 Dockerfile**，包含 OCI 注释和最佳实践
+- **标准化的 Dockerfile**，包含 OCI 注解和最佳实践
 - **灵活的入口点系统**，支持自定义初始化脚本
 - **一致的环境变量配置**，适用于所有变体
 - **多架构支持**，适用于多样化的硬件平台
@@ -29,8 +29,8 @@ Docker 基础模板作为构建容器化应用程序的基础起点。它提供�
 
 ```bash
 # 拉取并运行默认的 Debian 变体
-docker pull snowdreamtech/base:debian
-docker run -d --name=base -e TZ=Asia/Shanghai snowdreamtech/base:debian
+docker pull snowdreamtech/postgresql:debian
+docker run -d --name=postgresql -p 5432:5432 -e TZ=Asia/Shanghai snowdreamtech/postgresql:debian
 
 # 或使用 docker compose
 docker compose up -d
@@ -44,15 +44,16 @@ docker compose up -d
 
 ```bash
 docker run -d \
-  --name=base \
+  --name=postgresql \
+  -p 5432:5432 \
   -e TZ=Asia/Shanghai \
   --restart unless-stopped \
-  snowdreamtech/base:debian
+  snowdreamtech/postgresql:debian
 ```
 
 **支持的架构**：amd64、arm32v7、arm64、ppc64le、riscv64、s390x
 
-**基础镜像**：`snowdreamtech/debian:latest`
+**基础镜像**：`snowdreamtech/debian:13.6.0`
 
 ### Alpine
 
@@ -60,126 +61,84 @@ docker run -d \
 
 ```bash
 docker run -d \
-  --name=base \
+  --name=postgresql \
+  -p 5432:5432 \
   -e TZ=Asia/Shanghai \
   --restart unless-stopped \
-  snowdreamtech/base:alpine
+  snowdreamtech/postgresql:alpine
 ```
 
-**支持的架构**：i386、amd64、arm32v6、arm32v7、arm64、ppc64le、riscv64、s390x
+**支持的架构**：386、amd64、arm/v6、arm/v7、arm64、ppc64le、riscv64、s390x
 
-**基础镜像**：`snowdreamtech/alpine:latest`
+**基础镜像**：`snowdreamtech/alpine:3.24.1`
 
 ### Rocky
 
-基于 Rocky Linux 的企业级变体，适用于需要 RHEL 兼容性的生产环境。
+基于 Rocky Linux 的企业级 Linux 变体，适用于需要 RHEL 兼容性的企业环境。
 
 ```bash
 docker run -d \
-  --name=base \
+  --name=postgresql \
+  -p 5432:5432 \
   -e TZ=Asia/Shanghai \
   --restart unless-stopped \
-  snowdreamtech/base:rocky
+  snowdreamtech/postgresql:rocky
 ```
 
 **支持的架构**：amd64、arm64、ppc64le、s390x
 
-**基础镜像**：`snowdreamtech/rocky:latest`
+**基础镜像**：`snowdreamtech/rocky:10.2.0`
 
-## 构建说明
+## 从源码构建
 
-### 单架构构建
-
-```bash
-# 构建 Debian 变体
-docker build -t snowdreamtech/base:debian ./docker/debian/
-
-# 构建 Alpine 变体
-docker build -t snowdreamtech/base:alpine ./docker/alpine/
-
-# 构建 Rocky 变体
-docker build -t snowdreamtech/base:rocky ./docker/rocky/
-```
-
-### 多架构构建
-
-使用 `docker buildx` 为多个架构构建镜像：
+克隆仓库并使用 Docker Buildx 构建：
 
 ```bash
-# 创建并使用 buildx 构建器
-docker buildx create --use --name build --node build --driver-opt network=host
+# 克隆仓库
+git clone https://github.com/snowdreamtech/postgresql.git
+cd postgresql
 
-# 为多个架构构建 Debian
+# 构建特定变体（例如 Debian）
+docker build -t snowdreamtech/postgresql:debian ./docker/debian/
+
+# 多平台构建
 docker buildx build \
-  --platform=linux/386,linux/amd64,linux/arm/v5,linux/arm/v7,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x \
-  -t snowdreamtech/base:debian \
+  --platform=linux/amd64,linux/arm64 \
+  -t snowdreamtech/postgresql:debian \
   ./docker/debian/ \
-  --push
-
-# 为多个架构构建 Alpine
-docker buildx build \
-  --platform=linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64,linux/ppc64le,linux/riscv64,linux/s390x \
-  -t snowdreamtech/base:alpine \
-  ./docker/alpine/ \
-  --push
-
-# 为多个架构构建 Rocky
-docker buildx build \
-  --platform=linux/amd64,linux/arm64,linux/ppc64le,linux/s390x \
-  -t snowdreamtech/base:rocky \
-  ./docker/rocky/ \
-  --push
+  --load
 ```
 
 ## 环境变量
 
-所有变体都支持以下环境变量进行运行时配置：
+所有变体均支持以下环境变量进行运行时配置：
 
-| 变量                   | 默认值    | 描述                                             |
-| ---------------------- | --------- | ------------------------------------------------ |
-| `KEEPALIVE`            | `0`       | 保持容器运行（1=启用，0=禁用）                   |
-| `CAP_NET_BIND_SERVICE` | `0`       | 启用绑定到特权端口（<1024）                      |
-| `LANG`                 | `C.UTF-8` | UTF-8 字符支持的区域设置                         |
-| `UMASK`                | `022`     | 默认文件创建掩码                                 |
-| `DEBUG`                | `false`   | 在入口点脚本中启用调试输出                       |
-| `PASSWORDLESS_SUDO`    | `false`   | 是否为非 root 用户启用无密码 sudo（true/false）  |
-| `PGID`                 | `0`       | 自定义用户创建的主组 ID                          |
-| `PUID`                 | `0`       | 自定义用户创建的用户 ID                          |
-| `USER`                 | `root`    | 自定义用户创建的用户名                           |
-| `WORKDIR`              | `/root`   | 工作目录路径                                     |
-| `TZ`                   | -         | 时区（例如 `Asia/Shanghai`、`America/New_York`） |
+| 变量 | 默认值 | 描述 |
+|------|--------|------|
+| `KEEPALIVE` | `1` | 保持容器运行（1=启用，0=禁用） |
+| `CAP_NET_BIND_SERVICE` | `0` | 允许绑定特权端口（<1024） |
+| `LANG` | `C.UTF-8` | 区域设置，支持 UTF-8 字符 |
+| `UMASK` | `022` | 默认文件创建掩码 |
+| `DEBUG` | `false` | 在入口点脚本中启用调试输出 |
+| `PGID` | `0` | 自定义用户创建的主组 ID |
+| `PUID` | `0` | 自定义用户创建的用户 ID |
+| `USER` | `root` | 自定义用户创建的用户名 |
+| `WORKDIR` | `/root` | 工作目录路径 |
+| `TZ` | - | 时区（例如 `Asia/Shanghai`、`America/New_York`） |
+| `POSTGRES_ROOT_PWD` | 随机生成 | 默认 `postgres` 超级用户的密码 |
+| `POSTGRES_USER` | - | 要创建的自定义 PostgreSQL 用户名 |
+| `POSTGRES_PWD` | 随机生成 | 自定义 PostgreSQL 用户的密码 |
+| `POSTGRES_DB` | - | 要创建并授权给 `POSTGRES_USER` 的数据库名 |
+| `POSTGRES_PORT` | `5432` | PostgreSQL 监听端口 |
+| `POSTGRES_HOST_AUTHMETHOD` | `trust` | pg_hba.conf 中的客户端认证方法 |
+| `POSTGRES_DISALLOW_USER_LOGIN_REMOTELY` | `0` | 设为 `1` 时禁止远程用户登录 |
+| `POSTGRES_MAX_CONNECTIONS` | `0` | postgresql.conf 中的最大连接数设置 |
 
-**Debian 特定**：
+**Debian 专属**：
 
-| 变量              | 默认值           | 描述                  |
-| ----------------- | ---------------- | --------------------- |
+| 变量 | 默认值 | 描述 |
+|------|--------|------|
 | `DEBIAN_FRONTEND` | `noninteractive` | Debian 软件包安装模式 |
-
-### 自定义用户创建
-
-在构建时创建具有特定 UID/GID 的非 root 用户：
-
-```bash
-docker build \
-  --build-arg PUID=1000 \
-  --build-arg PGID=1000 \
-  --build-arg USER=appuser \
-  -t snowdreamtech/base:debian-custom \
-  ./docker/debian/
-```
-
-或在运行时（需要重新构建镜像）：
-
-```bash
-docker run -d \
-  --name=base \
-  -e PUID=1000 \
-  -e PGID=1000 \
-  -e USER=appuser \
-  snowdreamtech/base:debian
-```
-
-**注意**：仅当 `PUID≠0`、`PGID≠0` 且 `USER≠root` 时才会创建用户。
 
 ## Docker Compose 示例
 
@@ -187,11 +146,14 @@ docker run -d \
 
 ```yaml
 services:
-  base:
-    image: snowdreamtech/base:debian
-    container_name: base
+  postgresql:
+    image: snowdreamtech/postgresql:debian
+    container_name: postgresql
+    ports:
+      - "5432:5432"
     environment:
       - TZ=Asia/Shanghai
+      - POSTGRES_ROOT_PWD=my_secret_password
     restart: unless-stopped
 ```
 
@@ -199,15 +161,21 @@ services:
 
 ```yaml
 services:
-  base:
-    image: snowdreamtech/base:debian
-    container_name: base
+  postgresql:
+    image: snowdreamtech/postgresql:debian
+    container_name: postgresql
+    ports:
+      - "5432:5432"
     environment:
       - TZ=Asia/Shanghai
       - DEBUG=true
       - KEEPALIVE=1
+      - POSTGRES_ROOT_PWD=root_secret
+      - POSTGRES_USER=appuser
+      - POSTGRES_PWD=user_secret
+      - POSTGRES_DB=appdb
     volumes:
-      - /path/to/data:/data
+      - /path/to/data:/var/lib/postgresql/data
     restart: unless-stopped
 ```
 
@@ -217,9 +185,9 @@ services:
 
 示例：
 
-- `snowdreamtech/base:<version>-debian`
-- `snowdreamtech/base:<version>-alpine`
-- `snowdreamtech/base:<version>-rocky`
+- `snowdreamtech/postgresql:17.11.0-debian`
+- `snowdreamtech/postgresql:18.6.0-alpine`
+- `snowdreamtech/postgresql:18.6.0-rocky`
 
 此格式允许：
 
@@ -229,25 +197,25 @@ services:
 
 ## 架构支持
 
-每个发行版变体都支持多个 CPU 架构，可在多样化的硬件平台上部署：
+每个发行版变体都支持多种 CPU 架构，以便跨多样化的硬件平台进行部署：
 
-| 变体       | 架构                                                          |
-| ---------- | ------------------------------------------------------------- |
-| **Debian** | amd64、arm32v7、arm64、ppc64le、riscv64、s390x                |
-| **Alpine** | i386、amd64、arm32v6、arm32v7、arm64、ppc64le、riscv64、s390x |
-| **Rocky**  | amd64、arm64、ppc64le、s390x                                  |
+| 变体 | 架构 |
+|------|------|
+| **Debian** | amd64、arm32v7、arm64、ppc64le、riscv64、s390x |
+| **Alpine** | 386、amd64、arm/v6、arm/v7、arm64、ppc64le、riscv64、s390x |
+| **Rocky** | amd64、arm64、ppc64le、s390x |
 
-Docker 在拉取镜像时会自动为您的平台选择适当的架构。
+拉取镜像时，Docker 会自动为您的平台选择适当的架构。
 
 ## 入口点系统
 
-基础模板包含一个灵活的入口点系统，在启动应用程序之前执行自定义初始化脚本。
+PostgreSQL 镜像包含灵活的入口点系统，在启动 PostgreSQL 前执行自定义初始化脚本。
 
 ### 工作原理
 
 1. `docker-entrypoint.sh` 脚本在容器启动时运行
 2. 它按字典顺序执行 `/usr/local/bin/entrypoint.d/` 中的所有可执行脚本
-3. 每个脚本都接收容器的命令行参数
+3. 每个脚本都会接收容器的命令行参数
 4. 如果任何脚本失败，容器将停止（快速失败行为）
 
 ### 添加自定义初始化
@@ -255,13 +223,13 @@ Docker 在拉取镜像时会自动为您的平台选择适当的架构。
 在派生的 Dockerfile 中创建自定义初始化脚本：
 
 ```dockerfile
-FROM snowdreamtech/base:debian
+FROM snowdreamtech/postgresql:debian
 
-# 添加您的自定义初始化脚本
+# 添加自定义初始化脚本
 COPY my-init.sh /usr/local/bin/entrypoint.d/20-my-init.sh
 RUN chmod +x /usr/local/bin/entrypoint.d/20-my-init.sh
 
-# 您的应用程序设置
+# 应用程序设置
 COPY app /app
 CMD ["/app/start.sh"]
 ```
@@ -271,80 +239,16 @@ CMD ["/app/start.sh"]
 启用调试输出以排查入口点执行问题：
 
 ```bash
-docker run -e DEBUG=true snowdreamtech/base:debian
+docker run -e DEBUG=true snowdreamtech/postgresql:debian
 ```
 
-输出示例：
+## 联系方式
 
-```
-→ [ENTRYPOINT] Executing all scripts in /usr/local/bin/entrypoint.d
-→ Running /usr/local/bin/entrypoint.d/10-base-init.sh
-→ [ENTRYPOINT] Done.
-```
+* 邮箱: <sn0wdr1am@qq.com>
+* QQ: 3217680847
+* QQ群: 949022145
+* WeChat/微信群: sn0wdr1am
 
-## 开发
-
-### 前置要求
-
-- Docker（>= 20.10）及 Docker Buildx 插件
-- [UniRTM](https://github.com/snowdreamtech/UniRTM)：统一运行时管理与工作区质量守卫
-
-### 质量与安全验证
-
-```bash
-# 安装并验证项目工具链
-unirtm run setup
-
-# 运行全工作区代码与格式质量检查（包含格式化、Linter 及安全规则）
-unirtm run verify
-
-# 运行全量安全审计（Zizmor, Gitleaks, OSV-Scanner, Trivy）
-unirtm run audit
-
-# 自动修复支持的问题和代码格式
-unirtm run fix
-```
-
-### 本地构建
-
-```bash
-# 构建特定变体
-docker build -t base:debian ./docker/debian/
-docker build -t base:alpine ./docker/alpine/
-docker build -t base:rocky ./docker/rocky/
-```
-
-### 测试
-
-```bash
-# 测试默认配置
-docker run --rm base:debian id
-
-# 测试自定义用户创建
-docker build --build-arg PUID=1000 --build-arg PGID=1000 --build-arg USER=testuser -t base:debian-test ./docker/debian/
-docker run --rm base:debian-test id
-# 预期输出：uid=1000(testuser) gid=1000(testuser)
-
-# 测试 DEBUG 模式
-docker run --rm -e DEBUG=true base:debian
-```
-
-## 参考资料
-
-1. [使用 buildx 构建多平台 Docker 镜像](https://icloudnative.io/posts/multiarch-docker-with-buildx/)
-2. [如何使用 docker buildx 构建跨平台 Go 镜像](https://waynerv.com/posts/building-multi-architecture-images-with-docker-buildx/#buildx-%E7%9A%84%E8%B7%A8%E5%B9%B3%E5%8F%B0%E6%9E%84%E5%BB%BA%E7%AD%96%E7%95%A5)
-3. [Building Multi-Arch Images for Arm and x86 with Docker Desktop](https://www.docker.com/blog/multi-arch-images/)
-4. [How to Rapidly Build Multi-Architecture Images with Buildx](https://www.docker.com/blog/how-to-rapidly-build-multi-architecture-images-with-buildx/)
-5. [Faster Multi-Platform Builds: Dockerfile Cross-Compilation Guide](https://www.docker.com/blog/faster-multi-platform-builds-dockerfile-cross-compilation-guide/)
-6. [docker/buildx](https://github.com/docker/buildx)
-
-## 联系方式（备注：base）
-
-- Email: <sn0wdr1am@qq.com>
-- QQ: 3217680847
-- QQ群: 949022145
-- WeChat/微信群: sn0wdr1am
-
-## 许可证
+## 许可协议
 
 MIT
