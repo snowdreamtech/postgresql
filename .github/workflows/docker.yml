@@ -266,6 +266,10 @@ jobs:
           images: |
             name=ghcr.io/snowdreamtech/postgresql,enable=true
             name=snowdreamtech/postgresql,enable=true
+            name=ghcr.io/snowdreamtech/postgres,enable=true
+            name=snowdreamtech/postgres,enable=true
+            name=ghcr.io/snowdreamtech/pg,enable=true
+            name=snowdreamtech/pg,enable=true
           flavor: |
             latest=false
             prefix=

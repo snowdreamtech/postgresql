@@ -11,12 +11,12 @@ Where `TAG` follows these patterns:
 - **Variant-specific tags**: `TAG-variant` (e.g., `nightly-alpine`, `3.23.4-alpine`)
 - **Default tags** (Debian only): `TAG` (e.g., `nightly`, `latest`, `13.4.0`)
 
-## Supported Registries
+## Supported Registries and Image Aliases
 
-All tags are pushed to two registries:
+All tags are pushed to two registries with repository aliases (`postgresql`, `postgres`, `pg`):
 
-- **GitHub Container Registry**: `ghcr.io/snowdreamtech/postgresql:TAG`
-- **DockerHub**: `snowdreamtech/postgresql:TAG`
+- **GitHub Container Registry**: `ghcr.io/snowdreamtech/postgresql:TAG` (Aliases: `ghcr.io/snowdreamtech/postgres:TAG`, `ghcr.io/snowdreamtech/pg:TAG`)
+- **DockerHub**: `snowdreamtech/postgresql:TAG` (Aliases: `snowdreamtech/postgres:TAG`, `snowdreamtech/pg:TAG`)
 
 ## Tag Scenarios
 
